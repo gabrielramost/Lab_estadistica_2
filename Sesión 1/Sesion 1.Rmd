@@ -1,141 +1,25 @@
 ---
 title: "**Sesión 1. Lectura de datos (I)**"
 output:
-  html_document: default
-  pdf_document: default
+ html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    code_download: true
+    theme: cosmo
+    highlight: textmate
 ---
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
+```{r,echo=FALSE, out.width="50%",fig.align="center"}
 knitr::include_graphics("logoPUCP.png") 
 ```
 
-# **1. Introducción al laboratorio**
-
-### **Objetivo**
-
-El objetivo principal del laboratorio es desarrollar habilidades de pre procesamiento de datos, es decir se dotará al estudiante de herramientas para la lectura, limpieza, formateo e integración de datos, utilizando el programa R y su entorno R Studio.
-
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("limpieza.jpg") 
-```
-
-### **Jefes de práctica**
-
-+ Alexander Benites, Politólogo
-
-+ Wendy Adrianzén, Politóloga
 
 
-### **Dinámica de las sesiones**
-
-Las sesiones se realizarán durante 2 horas, teniendo a la mitad del curso un receso de 10 minutos. El material de la sesión estará disponible todos los viernes, previo a cada clase. Se requiere puntualidad del alumno/a, así como respeto y responsabilidad en las actividades.
-
-La Facultad entregará un certificado de manejo del “Lenguaje R para Análisis Estadístico” a nivel INTERMEDIO al haber obtenido una nota mayor o igual a 14 en cada una de las prácticas calificada
-
-### **Distribución de las sesiones**
-
-Ver el excel adjunto
-
-# **2. Requisitos**
-
-### **2.1. Instalación del programa**
-
-Luego de haber llevado el curso de Estadística, todos deben tener instalado el programa, pero por si las dudas, les dejamos nuevamente los instaladores.
-
-+ **Primero debe instalar R**. Podrán encontrar los instaladores para distintos sistemas operativos en la siguiente dirección: https://cran.r-project.org/
-
-+ **Luego R Studio**. Una vez instalado el programa, podemos instalar su entorno de desarrollo integrado: R studio. Podrán encontrar los instaladores para distintos sistemas operativos en la siguiente dirección: https://rstudio.com/products/rstudio/download/#download
-
-### **2.2. Configuración de directorio de trabajo**
-
-Recuerden que antes de comenzar a hacer operaciones con R necesitamos definir nuestro lugar de trabajo. Para esto tenemos dos alternativas.
-
-#### **Opción 1. Fijar directorio**
-
-Para ver nuestro lugar de trabajo actual escribimos el siguiente comando:
-
-```{r}
-getwd()
-```
 
 
-Para una mejor experiencia, pueden crear una carpeta en la cual trabajá a lo largo del curso. La ruta a través del menú es: **Session > Set Working Directory > Choose Directory**. Esto abrirá una ventana emergente, donde buscaremos la carpeta en la cual vamos a trabajar, la seleccionamos y apretamos "Open".
-
-Si queremos verificar el cambio, volvemos a digitar la función **"getwd()"** en la consola.
-
-#### **Opción 2. Proyecto de R**
-
-Otra opción en crear un proyecto. Al crearlo todos los ficheros quedan vinculados directamente al proyecto. Para crear un proyecto seleccione la ruta: **File > New project...** Se abrirá la siguiente ventana:
-
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("proyecto.png") 
-```
-
-
-Para crear un proyecto en un nuevo directorio, hacemos clic en el botón New Directory. Seguidamente, seleccionamos el tipo de proyecto, en nuestro caso Empty Project. Ahora, asignamos un nombre al directorio (carpeta) que se va a crear y que al mismo tiempo será el nombre del proyecto de R. Para terminar, hacemos clic en el botón Create Project. Al seguir este proceso se habrá creado una carpeta en Documentos y un fichero nombre_carpeta.Rproj.
-
-Para crear un proyecto en una carpeta que ya existe, hacemos clic en el botón Existing Directory y después seleccionamos la carpeta ayudándonos del Browse.. si fuera necesario. Una vez elegida la carpeta, clicamos en Create Project.
-
-Para abrir un proyecto hacemos doble clic sobre el archivo con extensión .Rproj o lo abrimos desde el menú de RStudio: File > Open Project...
-
-Ventaja de los proyectos: cualquier fichero que creemos (script de R, documento de Rmarkdown, etc.) y guardemos se guardará en la carpeta del proyecto.
-
-
-### **2.3. Github**
-
-Vamos a requerir que se creen una cuenta en GitHub. GitHub permite alojar proyectos utilizando el sistema de control de versiones Git. Se utiliza principalmente para la creación de código fuente de programas de ordenador. Para fines de este curso, vamos a utilizar Github como repositorio para cargar nuestras bases de datos, administrar nuestros archivos etc.
-
-**Créese una cuenta en Github:**
-
-Ingrese a esta dirección: https://github.com/
-
-Si quiere saber más de GitHub visite:
-
-https://www.youtube.com/watch?v=Uw8SIaAK-vw&t=134s
-
-**Github como repositorio**
-
-+ En la parte superior derecha seleccione "+", seleccione "New repository" y siga los pasos precisando el nombre del respositorio, descripción (opcional),elija la visibilidad del repositorio (publico o privado), y ¡cree su repositorio!
-
-+ Cargue archivos seleccionando Add file > Upload files > Choose your files > Commit changes
-
-Si quiere profundizar más sobre el GitHub como repositorio:
-
-https://www.youtube.com/watch?v=JN6rzv4zSJ4s
-
-### **2.4. R Markdown y Knit en R Studio**
-
-Vamos a trabajar en archivos R markdown (Rmd), pero para presentarlos de una manera amigable, podemos exportarlos en formato PDF, Html o en una página web.
-
-Para una mejor experiencia, antes de exportar a PDF, deberá instalar "tinytex", con cualquiera de los siguientes códigos desde su consola:
-
-**install.packages('tinytex')**
-
-**tinytex::install_tinytex()**
-
-
-## **3. Comunidad R**
-
-En muchas ocasiones necesitamos ayuda sobre cómo funciona una determinada función, cuáles son sus argumentos, etc.
-
-```{r}
-help(mean)
-?mean
-mean    # y pulsamos la tecla F1
-```
-
-Tambien pueden consultar algunas webs que ofrecen ayuda:
-
-+ R Bloggers: <https://www.r-bloggers.com/>
-+ Stack Overflow: <https://stackoverflow.com/>
-
-La comunidad de R también está en las redes sociales y es muy activa. 
-Pueden usar twitter, instagram y facebook para enterarse de actualizaciones, códigos, etc. Algunas cuentas de twitter interesantes por aquí:
-
-@aRtsy_package: <https://twitter.com/aRtsy_package>
-@rfortherest: <https://twitter.com/rfortherest>
-@RLangPackage: <https://twitter.com/RLangPackage>
-@rstatstweet: <https://twitter.com/rstatstweet>
 
 # **4. Data frames**
 
