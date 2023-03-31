@@ -1,20 +1,4 @@
----
-title: "**Introducción**"
-output:
- html_document:
-    toc: true
-    toc_float: true
-    collapsed: false
-    number_sections: false
-    toc_depth: 1
-    code_download: true
-    theme: cosmo
-    highlight: textmate
----
 
-```{r,echo=FALSE, out.width="50%",fig.align="center"}
-knitr::include_graphics("logoPUCP.png") 
-```
 
 # **1. Objetivos**
 
