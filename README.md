@@ -1,12 +1,10 @@
-
+# **Bienvenidos/as al Laboratorio de Estadística para el Análisis Político 2**
 
 # **1. Objetivos**
 
 El objetivo principal del laboratorio es que los y las participantes desarrollen habilidades básicas e intermedias para la manipulación de datos. Se dotará al estudiante de herramientas para la lectura, limpieza, formateo, integración y visualización de datos, utilizando principalmente el software R y su entorno R Studio.
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("datos.jpeg") 
-```
+![](https://github.com/gabrielramost/Lab_estadistica_2/blob/3580b6164af1e82ade74522df80488b1332c55de/Introducci%C3%B3n/datos.jpeg)
 
 **Dinámica de las sesiones**
 
@@ -45,10 +43,7 @@ Si queremos verificar el cambio, volvemos a digitar la función **"getwd()"** en
 
 Otra opción en crear un proyecto. Al crearlo todos los ficheros quedan vinculados directamente al proyecto. Para crear un proyecto seleccione la ruta: **File > New project...** Se abrirá la siguiente ventana:
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("proyecto.png") 
-```
-
+![](https://github.com/gabrielramost/Lab_estadistica_2/blob/3580b6164af1e82ade74522df80488b1332c55de/Introducci%C3%B3n/proyecto.png)
 
 Para crear un proyecto en un nuevo directorio, hacemos clic en el botón New Directory. Seguidamente, seleccionamos el tipo de proyecto. Ahora, asignamos un nombre al directorio (carpeta) que se va a crear y que al mismo tiempo será el nombre del proyecto de R. Para terminar, hacemos clic en el botón Create Project. Al seguir este proceso se habrá creado una carpeta en Documentos y un fichero nombre_carpeta.Rproj.
 
@@ -87,19 +82,15 @@ Todo el material del curso estará disponible en un repositorio de Github: https
 - Con esto podrá visualizar el repositorio en su carpeta de documentos. 
 - Para actualizar, siempre que entre a su computador de "Pull origin"
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("github.png") 
-```
+![](https://github.com/gabrielramost/Lab_estadistica_2/blob/3580b6164af1e82ade74522df80488b1332c55de/Introducci%C3%B3n/github.png)
 
 
 ## **2.4. R Markdown**
 
 Vamos a trabajar en archivos R markdown (Rmd). El R Markdown es un lenguaje marcado ligero que nos permite escribir informes que contengan código R . El lenguaje Markdown surge con el objetivo de aligerar las marcas en los lenguajes Markup , principalmente el HTML, pero tambien el LaTeX .En términos sencillos RMarkdown es un procesador de texto que ofrece además la posibilidad de incluir trozos de código desde R (u otros formatos). 
 
+![](https://github.com/gabrielramost/Lab_estadistica_2/blob/3580b6164af1e82ade74522df80488b1332c55de/Introducci%C3%B3n/rmd.png)
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("rmd.png") 
-```
 
 Para ejecutar correctamente un documento de RMarkdown y lograr construir un reporte final en el formato deseado, es preciso asegurar que todos estos elementos estén instalados en el computador. Asegurese de instalar adecuadamente los siguientes paquetes (ejecute los siguientes comandos en la consola):
 
