@@ -16,16 +16,33 @@ output:
 knitr::include_graphics("logoPUCP.png") 
 ```
 
+# **1. Tipos de bases de datos**
+
+Una base de datos es una recopilación organizada de información o datos estructurados, que normalmente se almacena de forma electrónica en un sistema informático. Normalmente, una base de datos está controlada por un sistema de gestión de bases de datos (DBMS). En conjunto, los datos y el DBMS, junto con las aplicaciones asociadas a ellos, reciben el nombre de sistema de bases de datos, abreviado normalmente a simplemente base de datos.
+
+Los datos de los tipos más comunes de bases de datos en funcionamiento actualmente se suelen utilizar como estructuras de filas y columnas en una serie de tablas para aumentar la eficacia del procesamiento y la consulta de datos. Así, se puede acceder, gestionar, modificar, actualizar, controlar y organizar fácilmente los datos. La mayoría de las bases de datos utilizan un lenguaje de consulta estructurada (SQL) para escribir y consultar datos.
 
 
+```{r,echo=FALSE, out.width="70%",fig.align="center"}
+knitr::include_graphics("bd.png") 
+```
+
+Si hablamos de bases de datos estructurados solemos referirnos a aquellos que tienen un formato definido, por ejemplo una tabla con filas y columnas; a diferencia de los datos no estructurados que no tienen un patrón predeterminado (como pueden ser imágenes, videos, sonidos y texto libre) (Reneboldi, 2020).
 
 
+# **2. Data frames**
 
-# **4. Data frames**
+R es un lenguaje orientado a objetos. Los objetos pueden ser usados para guardar valores y pueden modificarse (mediante funciones) como por ejemplo sumar dos objetos o calcular la media. R tiene cinco tipos básicos de objetos:
 
-Los data frame se usan para almacenar datos en forma de tablas (filas / columnas), como estamos habituados en Excel, Spss, etc.
+- character
+- numeric (número real)
+- integer
+- complex
+- logical (True/False)
 
-Los data frame pueden almacenar objetos/datos de distinto tipo: numéricos, carácter, etc. Normalmente los data frame los creamos al cargar/leer una base de datos, sin embargo podemos crear un data frame desde R para ver su estructura.
+El objeto más básico en R es un vector, que sólo puede contener objetos de la misma clase.
+
+Los **data frame** se usan para almacenar datos en forma de tablas (filas / columnas), como estamos habituados en Excel, Spss, etc. Pueden almacenar objetos/datos de distinto tipo. Normalmente los data frame los creamos al cargar/leer una base de datos relacional, sin embargo podemos crear un data frame desde R para ver su estructura.
 
 ```{r}
 presupuesto2021 = data.frame( prioridad= c("reactivación", "educación", "salud", "mujer","pobreza"),
@@ -54,13 +71,15 @@ presupuesto2021[2] #opción 2
 ```
 
 
-# **5. Cargar datos de 'propietary software' en R**
+# **3. Cargar bases de datos de diversas extensiones en R**
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
+R nos permite importar y exportar bases de datos en diversas extensiones.
+
+```{r,echo=FALSE, out.width="70%",fig.align="center"}
 knitr::include_graphics("datos.png") 
 ```
 
-R nos permite abrir archivos en diversas extensiones. Algunos que usaremos en este curso son las siguientes:
+Algunas que usaremos en este curso son las siguientes:
 
 | Extensión | Tipo de archivo              |
 |-----------|------------------------------|
@@ -74,7 +93,7 @@ R nos permite abrir archivos en diversas extensiones. Algunos que usaremos en es
 
 Los datos pueden estar en algun lugar de la web; si crees que esos datos permanecerán en ese sitio, quizás puedas sólo utilizar su link de descarga y leerlos directamente. Lo más seguro, en todo caso, es usarlos de esa manera y luego guardar esa data en tu **repositorio** del proyecto (en la ‘nube’). Esto facilitará su lectura y **replicabilidad**.
 
-NOTA: En el git hub no leemos el URL sino el **raw**
+NOTA: En el github no leemos el URL sino el **raw**
 
 Si por alguna razón deseas leerlos desde tu computadora, debes tener los archivos en la misma carpeta de tu R Markdown, R Notebook.
 
@@ -150,20 +169,27 @@ dataDOC=read.csv(lkDOC)
 
 +   **Archivos de Datos Espaciales**
 
-En en este link: (https://app.box.com/s/mdcqfue3u0wis0b3v4gy0kwcjv4e0amu) encontrarás una carpeta comprimida. Al descomprimirla, encontraras varios tipos de archivos con el mismo nombre. Eso constituye un mapa en formato SHAPEFILE. Los shapefiles tienen muchos archivos de subcomponentes, cada uno con una extensión de archivo diferente. Un archivo tendrá la extensión ".shp", pero otros pueden tener ".dbf", ".prj", etc. 
-Es difícil que R lea este mapa, por lo que debes convertirlo a formato topojson.
+R también nos permite hacer análisis de datos geoespaciales. Esto es relevante, ya que mas del 70 de la información que utilizamos en cualquier tipo de
+disciplina es, o puede ser, georreferenciada. Se trata de información a la cual puede asignarse una posición geográfica
 
-Cambie el mapa a formato JSON. Para ello vaya al mapshaper(https://mapshaper.org/); desde ahí, suba los archivos de la carpeta, simplifíquelo, y luego exportelo como topojson. Luego, suba el archivo topojson a Github; guarde el link de descarga del archivo subido; y ábralo en R así:
+Los datos que pertenecen a una base de datos geográfica se componen de tres elementos la geometría, topología y atributos, por lo que se encuentran distribuidos en diversos archivos. 
 
-**instale los paquetes "sp" y "rgdal"**
+En este marco, el Formato SHAPEFILE es un conjunto de archivos que nos permiten almacenar la forma, ubicación y atributos de nuestros vectores shp. Son tres o más, con extensiones de archivo concretas que se deben almacenar en el mismo espacio de trabajo de proyecto.
+
+Una de las formas de leer este tivo de datos es a través de ggplot. Vamos a leer el mapa de los departamentos del Perú, que hemos obtenido a través del portal GEO GPS PERÚ:https://www.geogpsperu.com/
+
+Este mapa contiene 7 archivos en diversas extensiones. Para abrir el mapa utilizaremos la extensión shp., sin embargo todos los demás archivos deben estar en la carpeta sino no podrá ser posible la lectura.Instalamos ggplot2 y sf
+
+```{r}
+library(ggplot2)
+library(sf) 
+mapDEP=sf::read_sf("DEPARTAMENTOS_inei_geogpsperu_suyopomalia.shp")
+mapa1 = ggplot(mapDEP) + geom_sf()
+mapa1
+```
 
 
-No obstante, tenemos una forma más práctica de hacerlo con ggplot2, solo usando el archivo "shp". 
-Nota: Asegurense que todos los archivos del shapefile esté en su directorio.
-
-
-
-# **6. Lugares ricos en datos (Bases estructuradas)**
+# **4. Lugares ricos en datos (Bases estructuradas)**
 
 ### INEI
 
@@ -325,3 +351,5 @@ https://fragilestatesindex.org
 
 ### State Capacity Dataset
 http://www-personal.umich.edu/~jkhanson/state_capacity.html
+
+
