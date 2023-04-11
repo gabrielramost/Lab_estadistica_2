@@ -1,0 +1,1120 @@
+#Limpieza Ubigeo
+
+```{r}
+library(rio)
+ubigeo = import( "https://github.com/ernestorivero/Ubigeo-Peru/raw/master/csv/ubigeo_peru_2016_departamentos.csv" )
+```
+
+```{r}
+ubigeo$name=casefold(ubigeo$name, upper = TRUE)
+```
+
+```{r}
+library(stringi)
+ubigeo$name=stri_trans_general(ubigeo$name,"Latin-ASCII")
+```
+
+```{r}
+names(ubigeo)=c("Ubigeo_Dep","Departamento")
+```
+
+```{r}
+library(rio)
+ubigeo_provincia = import("https://github.com/ernestorivero/Ubigeo-Peru/raw/master/csv/ubigeo_peru_2016_provincias.csv")
+```
+
+```{r}
+ubigeo_provincia$name=casefold(ubigeo_provincia$name, upper = TRUE)
+```
+
+```{r}
+library(stringi)
+ubigeo_provincia$name=stri_trans_general(ubigeo_provincia$name,"Latin-ASCII")
+```
+
+```{r}
+names(ubigeo_provincia)=c("Ubigeo_Prov","Provincia","Ubigeo_Dep")
+```
+
+```{r}
+ubigeo_provincia=merge(ubigeo,ubigeo_provincia,by="Ubigeo_Dep")
+```
+
+```{r}
+library(rio)
+ubigeo_distrito = import("https://github.com/ernestorivero/Ubigeo-Peru/raw/master/csv/ubigeo_peru_2016_distritos.csv")
+```
+
+```{r}
+ubigeo_distrito$name=casefold(ubigeo_distrito$name, upper = TRUE)
+```
+
+```{r}
+library(stringi)
+ubigeo_distrito$name=stri_trans_general(ubigeo_distrito$name,"Latin-ASCII")
+```
+
+```{r}
+names(ubigeo_distrito)=c("Ubigeo_Dis","Distrito","Ubigeo_Prov","Ubigeo_Dep")
+```
+
+```{r}
+ubigeo_distrito=merge(ubigeo_provincia,ubigeo_distrito,by="Ubigeo_Prov")
+```
+
+```{r}
+ubigeo_distrito=ubigeo_distrito[,-c(7)]
+```
+
+```{r}
+ubigeo_distrito=ubigeo_distrito[,c(2,3,1,4,5,6)]
+```
+
+```{r}
+names(ubigeo_distrito)=c("Ubigeo_Dep","Departamento","Ubigeo_Prov","Provincia","Ubigeo_Dis","Distrito")
+```
+
+#Carga de base de datos REGIONALES
+
+```{r}
+dep2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRiGuXRXHC8gHD2jPwqNdA8W2KI8iYN_8d1torJvxNRiAf_Zn143CVQGG6_SbGjBA/pub?gid=491699768&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2021=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vT-Lw5rXCtzqysSNbsL8vcU-pJL6lC1Oy-Y7WRBl7WT3pziD5kMQQyNt9iiYXua-w/pub?gid=1715275787&single=true&output=csv", sep = ",",header = TRUE)
+  
+dep2020=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTSw5FuPPJwc2VqXMLzrdrWK4NqbMc79oNDD9wTo-GUX7vKN9mYv3wKfQGDuomJng/pub?gid=1013716631&single=true&output=csv", sep = ",",header = TRUE)
+  
+dep2019=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vS74eBzftBdPV5KZiG8FCmpgyAGxAusy_WBLAmj4dmXZlAcj1fI1y5mZryeObgD0Q/pub?gid=1488637134&single=true&output=csv", sep = ",",header = TRUE)
+  
+dep2018=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRcEVZd7FToWLVMLposVZUjdBrWWNyF9zfFf327v3FmIpVp-KTGo3n1i6NN8csEdQ/pub?gid=1000086030&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2017=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vR0NsT69wGucp9t8A7cCVvYaVIzDazkv94EwyFtTOAgqIC6WjzTRDHBMVDjY9eWlQ/pub?gid=875873006&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2016=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTfCNPcEJJyKOyAyPaLpDrEuG6px5gO74tVt0vHqmcBW0fCq9gGr-2MzV0H_hGBQw/pub?gid=2077307650&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2015=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTBVDe_3NxB6N5vFnvbmz5A9szdAeztfvw5a_Y8MOFXzVnuqL7nbKUrv_bWEXcAOQ/pub?gid=1459438924&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2014=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vROSSkqbklV8OyNphdaE1rcGjOduIoV1qfZR2onoMLxNQxgHvFt-wr14MK32RUzxg/pub?gid=364604785&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2013=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSAENhvq01iKF8I8la6gBZunTWnXBwgvtAKXcyrptqtG1yRxt0UpgzpUia121Nrwg/pub?gid=837162696&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2012=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTmWsa4vkjQxtypL20E0pP7KqltUptqeBSFEI4yuQo20qsns-WBYXkd617i-F-PQw/pub?gid=1416028162&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2011=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4XjnRbLbS6sEE_1OeN_s-sAtXEGjGR3fkG_Ugwzq6C5IcDvYJ3z0rmT9yjb2fHQ/pub?gid=2057475072&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2010=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTY1J9oGIblPTxyJsa4s8DOFrQZJEBMf9AMgaX9Dazwgzyzbx58k7Ym2jv8D0VCSQ/pub?gid=2027916162&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2009=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ208BjLIeit2ovSRxB4fI-OHCnv8IFPtFcGHOmPGFN-eDnVmBejhSeTB4or1X1wg/pub?gid=218772651&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2008=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTXPJAJXaXTaV8iPZNZOi0wHg4_QXb1inzzbGzER1odyoE3joO_ViiOeKjTgIwmkg/pub?gid=1097862609&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2007=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQGwUc7ZnNDfSm4UZApteFY6i2G91u4QAM91bcXMtP8UvvjAZH2WCJ3apaJlDzMzw/pub?gid=1247164042&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2006=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTC8qAOHJpM3W1KWoQg782MOF6Iswx1AmcJfZFl524LlC_2PN7G8-OrGQNR-gLhmA/pub?gid=1808122270&single=true&output=csv", sep = ",",header = TRUE)
+
+dep2005=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTacuTKF3IpiLZEf1z0rO80HzglD0Bv1VuSfUsRkowU8mV234Z8TQADry0limYNlQ/pub?gid=1603801043&single=true&output=csv", sep = ",",header = TRUE)
+```
+
+#Limpieza con Provincia Constitucional del Callao
+
+```{r}
+limpieza_prov_callao <- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:16),-c(4:7)]
+
+#renombrar columnas
+
+names(departamento)=c("Departamento","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Departamento
+departamento$Departamento=str_split(string = colsucia,
+          pattern = ' GOBIERNO REGIONAL DEL DEPARTAMENTO DE ',
+          simplify= T)[,2]
+
+#agregar callao
+departamento$Departamento[departamento$Departamento==""]="CALLAO"
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1], as.numeric)
+
+#merge
+departamento=merge(departamento,ubigeo,by= "Departamento",all.y = TRUE)
+
+#na en 0
+departamento[is.na(departamento)]=0
+
+#ordenar
+departamento=departamento[,c(6,1:5)]
+  
+  # Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con menos filas
+
+```{r}
+limpieza_filas <- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:15),-c(4:7)]
+
+#renombrar columnas
+
+names(departamento)=c("Departamento","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Departamento
+departamento$Departamento=str_split(string = colsucia,
+          pattern = ' GOBIERNO REGIONAL DEL DEPARTAMENTO DE ',
+          simplify= T)[,2]
+
+#agregar callao
+departamento$Departamento[departamento$Departamento==""]="CALLAO"
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1], as.numeric)
+
+#merge
+departamento=merge(departamento,ubigeo,by= "Departamento",all.y = TRUE)
+
+#na en 0
+departamento[is.na(departamento)]=0
+
+#ordenar
+departamento=departamento[,c(6,1:5)]
+  
+  # Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con Gobierno Regional del Callao
+
+```{r}
+limpieza_gob_callao<- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:15),-c(4:7)]
+
+#renombrar columnas
+
+names(departamento)=c("Departamento","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Departamento
+departamento$Departamento=str_split(string = colsucia,
+          pattern = ' GOBIERNO REGIONAL ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1], as.numeric)
+
+#merge
+departamento=merge(departamento,ubigeo,by= "Departamento",all.y = TRUE)
+
+#na en 0
+departamento[is.na(departamento)]=0
+
+#ordenar
+departamento=departamento[,c(6,1:5)]
+  
+  # Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con menos columnas
+
+```{r}
+limpieza_columnas <- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:15),-c(4,5)]
+
+#renombrar columnas
+
+names(departamento)=c("Departamento","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Departamento
+departamento$Departamento=str_split(string = colsucia,
+          pattern = ' GOBIERNO REGIONAL ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1], as.numeric)
+
+#merge
+departamento=merge(departamento,ubigeo,by= "Departamento",all.y = TRUE)
+
+#na en 0
+departamento[is.na(departamento)]=0
+
+#ordenar
+departamento=departamento[,c(6,1:5)]
+  
+  # Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Con Provincia Constitucional del Callao
+
+```{r}
+dep2022=limpieza_prov_callao(dep2022)
+dep2021=limpieza_prov_callao(dep2021)
+dep2020=limpieza_prov_callao(dep2020)
+```
+
+#Con menos filas
+
+```{r}
+dep2019=limpieza_filas(dep2019)
+dep2018=limpieza_filas(dep2018)
+dep2017=limpieza_filas(dep2017)
+dep2016=limpieza_filas(dep2016)
+dep2015=limpieza_filas(dep2015)
+```
+
+#Con Gobierno Regional del Callao
+
+```{r}
+dep2014=limpieza_gob_callao(dep2014)
+dep2013=limpieza_gob_callao(dep2013)
+dep2012=limpieza_gob_callao(dep2012)
+```
+
+#Con menos columnas
+
+```{r}
+dep2011=limpieza_columnas(dep2011)
+dep2010=limpieza_columnas(dep2010)
+dep2009=limpieza_columnas(dep2009)
+dep2008=limpieza_columnas(dep2008)
+dep2007=limpieza_columnas(dep2007)
+dep2006=limpieza_columnas(dep2006)
+dep2005=limpieza_columnas(dep2005)
+```
+
+#agregar año
+
+```{r}
+dep2022$Año="2022"
+dep2021$Año="2021"
+dep2020$Año="2020"
+dep2019$Año="2019"
+dep2018$Año="2018"
+dep2017$Año="2017"
+dep2016$Año="2016"
+dep2015$Año="2015"
+dep2014$Año="2014"
+dep2013$Año="2013"
+dep2012$Año="2012"
+dep2011$Año="2011"
+dep2010$Año="2010"
+dep2009$Año="2009"
+dep2008$Año="2008"
+dep2007$Año="2007"
+dep2006$Año="2006"
+dep2005$Año="2005"
+```
+
+#juntar todas las bases regionales
+
+```{r}
+gob_regional=rbind(dep2005,dep2006,dep2007,dep2008,dep2009,dep2010,dep2011,dep2012,dep2013,dep2014,dep2015,dep2016,dep2017,dep2018,dep2019,dep2020,dep2021,dep2022)
+```
+
+#Cargar base de datos PPR132
+
+```{r}
+dep132_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRnT3xioO2p0FTjieq8MMZ4vJuLfzpnqyOo1nMo1VDeut1cEu5cWN7mfKEQw-Oz0Q/pub?gid=1240895439&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2021=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQK7n1xJ9oMML_9GGvCn9CilnZlPzFVTpMm_sIvuiMrPBOnN99Z5oCmgVukyYCIGg/pub?gid=1092741901&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2020=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vS8m9lj6WaFc8_VL-Olqwd6aq9S9U4MkCzXG4BQLVYrQa8o3kAwbklnqksB4QBffw/pub?gid=131858784&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2019=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTUNMdXRjoE6W5afbyYjmOZVQ0HRMxDNHDtYKX2WbYKzF_bBfBfuDHI237I8pHb_w/pub?gid=134826509&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2018=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTvAwl0Y5MyWWTRqAcNqcwoiHv41MyZ8Gp21J4kiEVktIbMbIa1f8CO5rfE75sxQg/pub?gid=1394451024&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2017=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSjREuYhzyN2HRtdoZGFPFbjWFHFiPUmEmwcPC6oVmqMUTkB1WibRBwh_VDRN68HA/pub?gid=487504979&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2016=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSvJh7INIoGBWtvuhZQ6VP2EVUaVlVp0T1EHFMmZ0c2cBtm9NzrMPwXe0yVTSuiMA/pub?gid=364209014&single=true&output=csv", sep = ",",header = TRUE)
+
+dep132_2015=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTEFrjURtxx6N88CiwhzICcqs81EK4xdXzLvEloj4PYleqspNWJtLYUeNEcMHJjUw/pub?gid=1284807082&single=true&output=csv", sep = ",",header = TRUE)
+```
+
+#limpieza ppr132
+
+```{r}
+dep132_2022=limpieza_filas(dep132_2022)
+dep132_2021=limpieza_filas(dep132_2021)
+dep132_2020=limpieza_filas(dep132_2020)
+dep132_2019=limpieza_filas(dep132_2019)
+dep132_2018=limpieza_filas(dep132_2018)
+dep132_2017=limpieza_filas(dep132_2017)
+dep132_2016=limpieza_filas(dep132_2016)
+dep132_2015=limpieza_filas(dep132_2015)
+```
+
+#agregar año
+
+```{r}
+dep132_2022$Año="2022"
+dep132_2021$Año="2021"
+dep132_2020$Año="2020"
+dep132_2019$Año="2019"
+dep132_2018$Año="2018"
+dep132_2017$Año="2017"
+dep132_2016$Año="2016"
+dep132_2015$Año="2015"
+```
+
+#juntar todas las bases regionales de ppr 132
+
+```{r}
+gob_regional_132=rbind(dep132_2015,dep132_2016,dep132_2017,dep132_2018,dep132_2019,dep132_2020,dep132_2021,dep132_2022)
+```
+
+#Cargar base de datos PPR140
+
+```{r}
+dep140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRXvd3KndihvLNURo0hW0ZaSMSO9jfqo1jAnypMBHuPI0e9VRh4V01ndqQoBejJ2Q/pub?gid=1442593298&single=true&output=csv", sep = ",",header = TRUE)
+
+dep140_2021=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSJ9HCcLf71x6oVb0pSvSTVuZ2k1LJwZWkO206yhrzz7gKakb9itwMxo91ejNyD0Q/pub?gid=1878683080&single=true&output=csv", sep = ",",header = TRUE)
+
+dep140_2020=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTxQZayMCp6phL2r6YwRFVei5wpq65_HKLVoYI64Z0kFsrA3yJNT55i7md5V0qBsA/pub?gid=50587040&single=true&output=csv", sep = ",",header = TRUE)
+
+dep140_2019=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQxW9V9t5HFm2wto2OyRVkwaCjxVU6oeXmJAFRgyAsThPI_4x5rUiEGA0EdROYk4A/pub?gid=291128528&single=true&output=csv", sep = ",",header = TRUE)
+
+dep140_2018=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTVFiStmaBeKLnwZlsVLscH-9eyXJ4c0VaKqW8TOUAgFYyGqD40sn8LgNkBV2P11A/pub?gid=772229621&single=true&output=csv", sep = ",",header = TRUE)
+
+dep140_2017=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCJBB4OSReBc5iadMLAMjjLx2s9eKcFRIq2v58gggpGYSohhd8g_NdBGW5Fj9SFw/pub?gid=590227602&single=true&output=csv", sep = ",",header = TRUE)
+
+dep140_2016=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQAqnzhlnGyCGsuiakm4BJOqp8wL_mkJeD-F0jevfpEwer8GRbwab_ZYl-7X2gddA/pub?gid=1005402253&single=true&output=csv", sep = ",",header = TRUE)
+```
+
+#limpieza ppr132
+
+```{r}
+dep140_2022=limpieza_filas(dep140_2022)
+dep140_2021=limpieza_filas(dep140_2021)
+dep140_2020=limpieza_filas(dep140_2020)
+dep140_2019=limpieza_filas(dep140_2019)
+dep140_2018=limpieza_filas(dep140_2018)
+dep140_2017=limpieza_filas(dep140_2017)
+dep140_2016=limpieza_filas(dep140_2016)
+```
+
+#agregar año
+
+```{r}
+dep140_2022$Año="2022"
+dep140_2021$Año="2021"
+dep140_2020$Año="2020"
+dep140_2019$Año="2019"
+dep140_2018$Año="2018"
+dep140_2017$Año="2017"
+dep140_2016$Año="2016"
+```
+
+#juntar todas las bases regionales de ppr 140
+
+```{r}
+gob_regional_140=rbind(dep140_2016,dep140_2017,dep140_2018,dep140_2019,dep140_2020,dep140_2021,dep140_2022)
+```
+
+#Cargar de bases de datos NACIONALES
+
+```{r}
+nac2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSZVQ4yMRXpNH19rHbc9ijW1iKoNc2lB7DEAISgoUI9mVIXv5JlSCsyrAj-pn9-Sw/pub?gid=224515814&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2021=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQX2vHoU4vuDzPZbX1iydXQqxa2GvucezrO75WC-zddnhu9L20cr10f808NVst7BA/pub?gid=38998353&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2020=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vS9kbKXZZMshQzOaWlP26Vpx8GL_bZpp56BKymtJlckV7hACoAidU_8o-_Pmyv3vg/pub?gid=902211374&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2019=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQwIZY2PoItb9s1KpW6WuvNw6Hxu_zUQfYm97F_I_6C8y9gYCQCS3tzR4DULp1NrA/pub?gid=414644468&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2018=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTPvsVVEsgyYbia1syQhYuOZjjkNon_nwEIrEJ1cLdenRW7mSfgdT-soJJGwt0Z_A/pub?gid=959770123&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2017=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTD1yJO7ulVKuhYUnc3wzhPhxjIUt7JMSSc2Df-yaxcomrei7QciT_qQaqWL4KXqw/pub?gid=1207759691&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2016=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRnuBYJ4OsjD-5-5gdBEuhzO6qz_ZoTJsHAcunh1ZXlzM9F-zR5zrW4MQizOq3Npg/pub?gid=967955471&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2015=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTx1ynDcHapZApI0eL4swAsFHO26jjkgoH1sRFED3RPbwai3LUYPNoT3HmvWvuhkQ/pub?gid=1330744353&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2014=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQsRBS11DegYNs_CEovWRGeAdLaBwugwX4hxRy8FVpMoX1DQbEaRBIpkks6ta0Xpw/pub?gid=587177302&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2013=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTAVJEkQ6-2l5Rmdk3YnedugN7_FYFqBUnsMbdvM8QGQzywWd9am1rcpc2zM_tkjQ/pub?gid=163103915&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2012=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vS58egLuGHCarY1XGZ1XMiE0xrOApxbQPUjqDT7Vx2gzopI4rmGnpwd6qU1zg0XYQ/pub?gid=1745310291&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2011=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vT8GpD6WtNcFBZnaI97aEDc0Xpk3ghMAQ2JcCMHvBe2r-7d28uxSuM4D9ViFM0S3Q/pub?gid=1493443814&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2010=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTch3wtRTjBYy6mDPBAv8q47s4fVQkuU9FeRTLOj58lOtZ1ILoP6Bf4MOxKhY38Rg/pub?gid=1147729488&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2009=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSIH_aoc2kGs-EYaMjrSsaKcnWT0Zc4vMotbw2S0dDmyrZTnTQGsrN37IPs89m04w/pub?gid=1384608487&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2008=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRbtW7HiUv3eyYnmNMZ9I5rhnvUlZ0wIoUvEuMt5dCGFtf02KfLJ7mwD59g8_THSA/pub?gid=931498688&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2007=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vTRh3-0I5HUmJ-w2htsu2d6fFcsnSVm4gHRdJ57NjT6SpkcUE7CXOEra-sq_M1u-g/pub?gid=1861783670&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2006=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFucjI0mIRoZ53OnOLSnKLNryHMa4bFfRNaW-kipcELg7RxwR7-DgnJkxVIGzTAQ/pub?gid=1409440999&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2005=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSQSA6o3_UodylphiQQ3Yw-Eg7X4konq-OCS8iSEsuiO88GD8CU_8rrJhKZmW9QVw/pub?gid=1086050383&single=true&output=csv", sep = ",",header = TRUE)
+
+nac2004=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSwSG28mLZrDcmDfKioC7CUXi0jn4NFjYyZiyiG6UwOo0cvxIVbdoA8cLA7aX0SiA/pub?gid=452369870&single=true&output=csv", sep = ",",header = TRUE)
+```
+
+#Limpieza pliego
+
+```{r}
+limpieza_pliego <- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:14),-c(4:7)]
+
+#renombrar columnas
+
+names(departamento)=c("Pliego","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Pliego
+departamento$Pliego=str_split(string = colsucia,
+          pattern = ': ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#Ministerio de Cultura
+departamento$Pliego[departamento$Pliego =="M. DE CULTURA"] = "MINISTERIO DE CULTURA"
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1], as.numeric)
+  
+# Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con menos columnas
+
+```{r}
+limpieza_pliego_columnas <- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:14),-c(4,5)]
+
+#renombrar columnas
+
+names(departamento)=c("Pliego","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Pliego
+departamento$Pliego=str_split(string = colsucia,
+          pattern = ': ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#Ministerio de Cultura
+departamento$Pliego[departamento$Pliego =="M. DE CULTURA"] = "MINISTERIO DE CULTURA"
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1],as.numeric)
+  
+# Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con menos filas
+
+```{r}
+limpieza_pliego_filas<- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:15),-c(4,5)]
+
+#renombrar columnas
+
+names(departamento)=c("Pliego","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Pliego
+departamento$Pliego=str_split(string = colsucia,
+          pattern = ': ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#Ministerio de Cultura
+departamento$Pliego[departamento$Pliego =="M. DE CULTURA"] = "MINISTERIO DE CULTURA"
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1],as.numeric)
+  
+# Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Con Organos Adscritos
+
+```{r}
+nac2022=limpieza_pliego (nac2022)
+nac2021=limpieza_pliego (nac2021)
+nac2020=limpieza_pliego (nac2020)
+nac2019=limpieza_pliego (nac2019)
+nac2018=limpieza_pliego (nac2018)
+nac2017=limpieza_pliego (nac2017)
+nac2016=limpieza_pliego (nac2016)
+nac2015=limpieza_pliego (nac2015)
+nac2014=limpieza_pliego (nac2014)
+nac2013=limpieza_pliego (nac2013)
+nac2012=limpieza_pliego (nac2012)
+```
+
+#Con menos columnas
+
+```{r}
+nac2011=limpieza_pliego_columnas(nac2011)
+nac2010=limpieza_pliego_columnas(nac2010)
+nac2004=limpieza_pliego_columnas(nac2004)
+```
+
+#Con menos filas
+
+```{r}
+nac2009=limpieza_pliego_filas(nac2009)
+nac2008=limpieza_pliego_filas(nac2008)
+nac2007=limpieza_pliego_filas(nac2007)
+nac2006=limpieza_pliego_filas(nac2006)
+nac2005=limpieza_pliego_filas(nac2005)
+```
+
+#agregar año
+
+```{r}
+nac2022$Año="2022"
+nac2021$Año="2021"
+nac2020$Año="2020"
+nac2019$Año="2019"
+nac2018$Año="2018"
+nac2017$Año="2017"
+nac2016$Año="2016"
+nac2015$Año="2015"
+nac2014$Año="2014"
+nac2013$Año="2013"
+nac2012$Año="2012"
+nac2011$Año="2011"
+nac2010$Año="2010"
+nac2009$Año="2009"
+nac2008$Año="2008"
+nac2007$Año="2007"
+nac2006$Año="2006"
+nac2005$Año="2005"
+```
+
+#juntar todas las bases nacionales
+
+```{r}
+gob_nacional=rbind(nac2005,nac2006,nac2007,nac2008,nac2009,nac2010,nac2011,nac2012,nac2013,nac2014,nac2015,nac2016,nac2017,nac2018,nac2019,nac2020,nac2021,nac2022)
+```
+
+#Carga de base de datos MUNICIPALES
+#2022
+```{r}
+amazonas140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRYxocNiVsWyiBU2BmXA9uKPS9SB46F3OYTcYf83UyegUIYYVXvImzBqndUE_Hh2A/pub?gid=896833635&single=true&output=csv", sep = ",",header = TRUE)
+ancash140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRItYDLL-XLNHhgcU-WZzunNSj1LGOzu77rb4WpQkHV8NRm8rBBcR7Gp5G1k6Icsw/pub?gid=392943693&single=true&output=csv", sep = ",",header = TRUE)
+apurimac140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vR-5I724GXKkECWlAV4SsS59ghYB0H_B4XkxOTkbt-aLmBMV9bnVV2pKTwPxFLREA/pub?gid=402410737&single=true&output=csv", sep = ",",header = TRUE)
+arequipa140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vT1Rg_KhJ2ezMBQ1tbZIkpaVMinUZbXb5CB3QSfGIhX49IM02DAzxCVPYlgqBm87Q/pub?gid=411765639&single=true&output=csv", sep = ",",header = TRUE)
+ayacucho140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRbsfb5K_QhTA2lCAoarIJexJ2WNScNhfVTb4cxvb59LCiqh6M5KbuGcSQb9G19_Q/pub?gid=1120057694&single=true&output=csv", sep = ",",header = TRUE)
+cajamarca140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRW5WssFuEzoRadsT54K1XEB-MpW8LMtVEWsc_C9pq5aW-6F7R02RQLDEWM08l01w/pub?gid=2021344706&single=true&output=csv", sep = ",",header = TRUE)
+cusco140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSIWJP_pc1JbQJZqzUMkvPsGSVF3K3fipy70EijS_Ic5_R8zsTsruTYSleYkEmHlg/pub?gid=716769465&single=true&output=csv", sep = ",",header = TRUE)
+huancavelica140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vS74yFdhafeOHDUS1345jUPsh0iwNagyt2T9FspU5qjoSE_187Zb938teqUsFsRwg/pub?gid=1503167984&single=true&output=csv", sep = ",",header = TRUE)
+ica140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQeeEldL5TLYmNrXI_4ZgFNjBJUY6qsPutjKJaVb7Hv4hOpW05VTNYLfr0GPBkGUg/pub?gid=1090620304&single=true&output=csv", sep = ",",header = TRUE)
+junin140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRgIpQfYed5Whe_bmmYTiB_q-XdNxuzv9BN4yPxJdhOOpp_BwiOktcSUQrJnIRByw/pub?gid=1438217082&single=true&output=csv", sep = ",",header = TRUE)
+libertad140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRQqMD0nDTlLNC3_DwxWQhbIE0q4rDY8DIIeApBMsaCfKTzgm7I5kcCXZdi82f5-w/pub?gid=1399093216&single=true&output=csv", sep = ",",header = TRUE)
+lima140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRHBU8hEz-vo-U32grQrSHn3y8SUJJA19OVxJWb7Gl0xZ0d4mFcyBah-xl2Vd6Wzw/pub?gid=1389952142&single=true&output=csv", sep = ",",header = TRUE)
+loreto140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vRjNuUMhURI6z5UxpXqKmCQ3LEpuxJALJnzmopuzgc0ERcShLBzlTIvJ_FVwO55mg/pub?gid=1943286222&single=true&output=csv", sep = ",",header = TRUE)
+pasco140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vSBBJjosRS7BmrioIQOr3r6XA9a2HAMEcVLgDEi9NZaonDk0TtlEtv8VUweeOCxUA/pub?gid=1662448548&single=true&output=csv", sep = ",",header = TRUE)
+piura140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9R_yyl2CAPhBCZ9wHGY_8f8di7EGEGmCGe4PdZZvW6O2kPf-8-gczdMFRkEyZ_A/pub?gid=1488917799&single=true&output=csv", sep = ",",header = TRUE)
+puno140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vS7k4afYvXql8Z86Tt8N85RQitRuFWVtB3IeTG9bR5q0H5yEGTKq7xBAnpwyOwaSg/pub?gid=482598458&single=true&output=csv", sep = ",",header = TRUE)
+martin140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vT_yphcmVuNoIRyaOr0vLzxeII9MUJ5efSWk8blVqqPnPuPLkkxgSsBek_kuLkGsw/pub?gid=1528253660&single=true&output=csv", sep = ",",header = TRUE)
+tacna140_2022=read.table("https://docs.google.com/spreadsheets/d/e/2PACX-1vQFMmztpI12iG16XuFAxxXjEu5Sn4urRtqN1sBslIHLak4zQC-MJvrK95uMDsnuNg/pub?gid=1188514042&single=true&output=csv", sep = ",",header = TRUE)
+```
+
+#Limpieza con solo distritos
+```{r}
+limpieza_distrito <- function(departamento) {
+  
+#borrar columnas
+
+departamento=departamento[-c(1:16),-c(4:7)]
+
+#renombrar columnas
+
+names(departamento)=c("Distrito","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Distrito
+departamento$Distrito=str_split(string = colsucia,
+          pattern = ' MUNICIPALIDAD DISTRITAL DE ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-1]=lapply(departamento[,-1], as.numeric)
+
+#merge
+departamento=merge(departamento,ubigeo_distrito,by= "Distrito",all.x = TRUE)
+
+#ordenar
+departamento=departamento[,c(6:10,1:5)]
+  
+  # Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con distrito y provincia
+```{r}
+limpieza_municipalidad <- function(departamento) {
+#borrar columnas
+departamento=departamento[-c(1:16),-c(4:7)]
+
+#renombrar columnas
+names(departamento)=c("Distrito","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Distrito
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' DE ',
+          simplify= T)[,1]
+
+colsucia=departamento$Municipalidad
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' MUNICIPALIDAD ',
+          simplify= T)[,2]
+
+colsucia=departamento$Distrito
+departamento$Distrito=str_split(string = colsucia,
+          pattern = ' DE ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-c(1,6)]=lapply(departamento[,-c(1,6)], as.numeric)
+
+#crear base de datos de distrito
+departamento=subset(departamento,Municipalidad=="DISTRITAL")
+
+#borrar columnas
+departamento=departamento[,-6]
+
+#merge distrito
+departamento=merge(departamento,ubigeo_distrito,by="Distrito",all.x = TRUE)
+
+#ordenar
+departamento=departamento[,c(6:10,1:5)]
+
+# Devolver los datos limpios
+  return(departamento)
+}
+```
+
+#Limpieza con provincia
+```{r}
+limpieza_provincia <- function(departamento) {
+
+departamento=departamento[-c(1:16),-c(4:7)]
+
+#renombrar columnas
+names(departamento)=c("Distrito","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Distrito
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' DE ',
+          simplify= T)[,1]
+
+colsucia=departamento$Municipalidad
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' MUNICIPALIDAD ',
+          simplify= T)[,2]
+
+colsucia=departamento$Distrito
+departamento$Distrito=str_split(string = colsucia,
+          pattern = ' DE ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-c(1,6)]=lapply(departamento[,-c(1,6)], as.numeric)
+
+#crear base de datos de provincia
+departamento=subset(departamento,Municipalidad=="PROVINCIAL")
+
+#limpieza de provincia
+names(departamento)=c("Provincia","PIA","PIM","Girado","Avance")
+
+#borrar columnas
+departamento=departamento[,-6]
+
+#merge provincia
+departamento=merge(departamento,ubigeo_provincia,by="Provincia",all.x = TRUE)
+
+#ordenar
+departamento=departamento[,c(6:8,1:5)]
+
+  return(departamento)
+}
+```
+
+#Limpieza sin sin_split para distrito
+```{r}
+limpieza_split_dis<- function(departamento) {
+
+departamento=departamento[-c(1:16),-c(4:7)]
+
+#renombrar columnas
+names(departamento)=c("Distrito","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Distrito
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' DE ',
+          simplify= T)[,1]
+
+colsucia=departamento$Municipalidad
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' MUNICIPALIDAD ',
+          simplify= T)[,2]
+
+colsucia=departamento$Distrito
+departamento$Distrito=str_split(string = colsucia,
+          pattern = 'DISTRITAL DE ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-c(1,6)]=lapply(departamento[,-c(1,6)], as.numeric)
+
+#crear base de datos de provincia
+departamento=subset(departamento,Municipalidad=="DISTRITAL")
+
+#borrar columnas
+departamento=departamento[,-6]
+
+#merge provincia
+departamento=merge(departamento,ubigeo_distrito,by="Distrito",all.x = TRUE)
+
+#ordenar
+departamento=departamento[,c(6:10,1:5)]
+
+  return(departamento)
+}
+```
+
+#Limpieza sin sin_split para provincia
+```{r}
+limpieza_split_prov <- function(departamento) {
+
+departamento=departamento[-c(1:16),-c(4:7)]
+
+#renombrar columnas
+names(departamento)=c("Distrito","PIA","PIM","Girado","Avance")
+
+#limpieza
+library(stringr)
+library(magrittr)
+library(readr)
+colsucia=departamento$Distrito
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' DE ',
+          simplify= T)[,1]
+
+colsucia=departamento$Municipalidad
+departamento$Municipalidad=str_split(string = colsucia,
+          pattern = ' MUNICIPALIDAD ',
+          simplify= T)[,2]
+
+colsucia=departamento$Distrito
+departamento$Distrito=str_split(string = colsucia,
+          pattern = 'PROVINCIAL DE ',
+          simplify= T)[,2]
+
+#quitar caracteres
+departamento$PIA=gsub("\\.","",departamento$PIA)
+departamento$PIM=gsub("\\.","",departamento$PIM)
+departamento$Girado=gsub("\\.","",departamento$Girado)
+
+#eliminar espacios en blanco
+departamento$Avance=trimws(departamento$Avance,whitespace = "[\\h\\v]")
+
+#categorizar
+departamento[,-c(1,6)]=lapply(departamento[,-c(1,6)], as.numeric)
+
+#crear base de datos de provincia
+departamento=subset(departamento,Municipalidad=="PROVINCIAL")
+
+#limpieza de provincia
+names(departamento)=c("Provincia","PIA","PIM","Girado","Avance")
+
+#borrar columnas
+departamento=departamento[,-6]
+
+#merge provincia
+departamento=merge(departamento,ubigeo_provincia,by="Provincia",all.x = TRUE)
+
+#ordenar
+departamento=departamento[,c(6:8,1:5)]
+
+  return(departamento)
+}
+```
+
+
+#solo distritos
+```{r}
+amazonas_dis_140_2022=limpieza_distrito (amazonas140_2022)
+cusco_dis_140_2022=limpieza_distrito(cusco140_2022)
+ica_dis_140_2022=limpieza_distrito(ica140_2022)
+pasco_dis_140_2022=limpieza_distrito(pasco140_2022)
+piura_dis_140_2022=limpieza_distrito(piura140_2022)
+martin_dis_140_2022=limpieza_distrito(martin140_2022)
+tacna_dis_140_2022=limpieza_distrito(tacna140_2022)
+```
+
+#municipalidades
+```{r}
+ancash_dis_140_2022=limpieza_municipalidad(ancash140_2022)
+apurimac_dis_140_2022=limpieza_municipalidad(apurimac140_2022)
+arequipa_dis_140_2022=limpieza_municipalidad(arequipa140_2022)
+ayacucho_dis_140_2022=limpieza_municipalidad(ayacucho140_2022)
+cajamarca_dis_140_2022=limpieza_municipalidad(cajamarca140_2022)
+huancavelica_dis_140_2022=limpieza_municipalidad(huancavelica140_2022)
+junin_dis_140_2022=limpieza_municipalidad(junin140_2022)
+libertad_dis_140_2022=limpieza_municipalidad(libertad140_2022)
+loreto_dis_140_2022=limpieza_municipalidad(loreto140_2022)
+puno_dis_140_2022=limpieza_municipalidad(puno140_2022)
+
+```
+
+#borrar distritos duplicados
+```{r}
+ayacucho_dis_140_2022=subset(ayacucho_dis_140_2022,Departamento=="AYACUCHO")
+cajamarca_dis_140_2022=subset(cajamarca_dis_140_2022,Departamento=="CAJAMARCA")
+huancavelica_dis_140_2022=subset(huancavelica_dis_140_2022,Departamento=="HUANCAVELICA")
+pasco_dis_140_2022=subset(pasco_dis_140_2022,Departamento=="PASCO")
+piura_dis_140_2022=subset(piura_dis_140_2022,Departamento=="PIURA")
+```
+
+#Provincia
+```{r}
+ancash_prov_140_2022=limpieza_provincia(ancash140_2022)
+apurimac_prov_140_2022=limpieza_provincia(apurimac140_2022)
+arequipa_prov_140_2022=limpieza_provincia(arequipa140_2022)
+ayacucho_prov_140_2022=limpieza_provincia(ayacucho140_2022)
+cajamarca_prov_140_2022=limpieza_provincia(cajamarca140_2022)
+huancavelica_prov_140_2022=limpieza_provincia(huancavelica140_2022)
+junin_prov_140_2022=limpieza_provincia(junin140_2022)
+lima_prov_140_2022=limpieza_provincia(lima140_2022)
+loreto_prov_140_2022=limpieza_provincia(loreto140_2022)
+```
+
+#Distrito con split
+```{r}
+lima_dis_140_2022=limpieza_split_dis(lima140_2022)
+```
+
+#Provincia con split
+```{r}
+libertad_prov_140_2022=limpieza_split_prov(libertad140_2022)
+puno_prov_140_2022=limpieza_split_prov(puno140_2022)
+```
+
+#Agregar año en distrito
+```{r}
+amazonas_dis_140_2022$Año="2022"
+ancash_dis_140_2022$Año="2022"
+apurimac_dis_140_2022$Año="2022"
+arequipa_dis_140_2022$Año="2022"
+ayacucho_dis_140_2022$Año="2022"
+cajamarca_dis_140_2022$Año="2022"
+cusco_dis_140_2022$Año="2022"
+huancavelica_dis_140_2022$Año="2022"
+ica_dis_140_2022$Año="2022"
+junin_dis_140_2022$Año="2022"
+libertad_dis_140_2022$Año="2022"
+lima_dis_140_2022$Año="2022"
+loreto_dis_140_2022$Año="2022"
+pasco_dis_140_2022$Año="2022"
+piura_dis_140_2022$Año="2022"
+puno_dis_140_2022$Año="2022"
+martin_dis_140_2022$Año="2022"
+tacna_dis_140_2022$Año="2022"
+```
+
+#Agregar año en provincia
+```{r}
+ancash_prov_140_2022$Año="2022"
+apurimac_prov_140_2022$Año="2022"
+arequipa_prov_140_2022$Año="2022"
+ayacucho_prov_140_2022$Año="2022"
+cajamarca_prov_140_2022$Año="2022"
+huancavelica_prov_140_2022$Año="2022"
+junin_prov_140_2022$Año="2022"
+libertad_prov_140_2022$Año="2022"
+lima_prov_140_2022$Año="2022"
+loreto_prov_140_2022$Año="2022"
+puno_prov_140_2022$Año="2022"
+```
+
+#merge distrito
+```{r}
+dis140_2022=rbind(amazonas_dis_140_2022,ancash_dis_140_2022,apurimac_dis_140_2022,arequipa_dis_140_2022,ayacucho_dis_140_2022,cajamarca_dis_140_2022,cusco_dis_140_2022,huancavelica_dis_140_2022,ica_dis_140_2022,junin_dis_140_2022,libertad_dis_140_2022,lima_dis_140_2022,loreto_dis_140_2022,pasco_dis_140_2022,piura_dis_140_2022,puno_dis_140_2022,martin_dis_140_2022,tacna_dis_140_2022)
+```
+
+#merge provincia
+```{r}
+prov140_2022=rbind(ancash_prov_140_2022,apurimac_prov_140_2022,arequipa_prov_140_2022,ayacucho_prov_140_2022,cajamarca_prov_140_2022,huancavelica_prov_140_2022,junin_prov_140_2022,libertad_prov_140_2022,lima_prov_140_2022,loreto_prov_140_2022,puno_prov_140_2022)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
