@@ -16,23 +16,32 @@ output:
 knitr::include_graphics("logoPUCP.png") 
 ```
 
-# **1. Tipos de bases de datos**
+# **1. Base de datos**
 
-Una base de datos es una recopilación organizada de información o datos estructurados, que normalmente se almacena de forma electrónica en un sistema informático. Normalmente, una base de datos está controlada por un sistema de gestión de bases de datos (DBMS). En conjunto, los datos y el DBMS, junto con las aplicaciones asociadas a ellos, reciben el nombre de sistema de bases de datos, abreviado normalmente a simplemente base de datos.
++ Una base de datos es una recopilación organizada de información o datos estructurados, que normalmente se almacena de forma electrónica en un sistema informático. 
++ Los tipos más comunes de bases de datos son las que se estructuran en filas y columnas en una serie de tablas para facilitar su procesamiento y la consulta de datos. Estas utilizan un lenguaje de consulta estructurada (SQL) para escribir y consultar datos".(Oracle, s/f). 
++ Sin embargo, también existen las bases de datos NoSQL que están diseñadas para modelos de datos específicos y tienen esquemas flexibles para crear aplicaciones modernas (AWS,s/f).
 
-Los datos de los tipos más comunes de bases de datos en funcionamiento actualmente se suelen utilizar como estructuras de filas y columnas en una serie de tablas para aumentar la eficacia del procesamiento y la consulta de datos. Así, se puede acceder, gestionar, modificar, actualizar, controlar y organizar fácilmente los datos. La mayoría de las bases de datos utilizan un lenguaje de consulta estructurada (SQL) para escribir y consultar datos.
 
-
-```{r,echo=FALSE, out.width="70%",fig.align="center"}
+```{r,echo=FALSE, out.width="60%",fig.align="center"}
 knitr::include_graphics("bd.png") 
 ```
 
-Si hablamos de bases de datos estructurados solemos referirnos a aquellos que tienen un formato definido, por ejemplo una tabla con filas y columnas; a diferencia de los datos no estructurados que no tienen un patrón predeterminado (como pueden ser imágenes, videos, sonidos y texto libre) (Reneboldi, 2020).
+También se suele hacer la distinción de bases de datos dependiendo si son estructuradas o no estructuradas. Las bases de datos estructuradas tienen un formato definido, por ejemplo una tabla con filas y columnas; a diferencia de los datos no estructurados que no tienen un patrón predeterminado (como pueden ser imágenes, videos, sonidos y texto libre) (Reneboldi, 2020).Por lo general, las bases de datos SQL (relacionales) son bases de datos estructuradas, mientras que las bases de datos no estructuradas no son aptas para una base de datos relacional convencional.
 
 
 # **2. Data frames**
 
-R es un lenguaje orientado a objetos. Los objetos pueden ser usados para guardar valores y pueden modificarse (mediante funciones) como por ejemplo sumar dos objetos o calcular la media. R tiene cinco tipos básicos de objetos:
+R es un lenguaje orientado a objetos. 
+
+
+
+Los principales objetos en R son vectores, matrices, arreglos, marcos de datos y listas
+
+
+Los objetos pueden ser usados para guardar valores y pueden modificarse (mediante funciones) como por ejemplo sumar dos objetos o calcular la media. 
+
+El objeto más básico en R es un vector, que sólo puede contener objetos de la misma clase:
 
 - character
 - numeric (número real)
@@ -40,9 +49,9 @@ R es un lenguaje orientado a objetos. Los objetos pueden ser usados para guardar
 - complex
 - logical (True/False)
 
-El objeto más básico en R es un vector, que sólo puede contener objetos de la misma clase.
+Por otro lado, los **data frame** almacenan datos en forma de tablas (filas / columnas), como estamos habituados en Excel. Un data frame está compuesto de vectores de distintos tipos.
 
-Los **data frame** se usan para almacenar datos en forma de tablas (filas / columnas), como estamos habituados en Excel, Spss, etc. Pueden almacenar objetos/datos de distinto tipo. Normalmente los data frame los creamos al cargar/leer una base de datos relacional, sin embargo podemos crear un data frame desde R para ver su estructura.
+Normalmente los data frame los creamos al cargar/leer una base de datos relacional, sin embargo podemos crear un data frame desde R para ver su estructura.
 
 ```{r}
 presupuesto2021 = data.frame( prioridad= c("reactivación", "educación", "salud", "mujer","pobreza"),
@@ -90,6 +99,15 @@ Algunas que usaremos en este curso son las siguientes:
 | dta       | Archivo en formato STATA     |
 | JSON       | JavaScript Object Notation     |
 | XML       | Extensible Markup Language     |
+
+
+
+
+
+
+
+
+
 
 Los datos pueden estar en algun lugar de la web; si crees que esos datos permanecerán en ese sitio, quizás puedas sólo utilizar su link de descarga y leerlos directamente. Lo más seguro, en todo caso, es usarlos de esa manera y luego guardar esa data en tu **repositorio** del proyecto (en la ‘nube’). Esto facilitará su lectura y **replicabilidad**.
 
