@@ -30,43 +30,108 @@ knitr::include_graphics("bd.png")
 También se suele hacer la distinción de bases de datos dependiendo si son estructuradas o no estructuradas. Las bases de datos estructuradas tienen un formato definido, por ejemplo una tabla con filas y columnas; a diferencia de los datos no estructurados que no tienen un patrón predeterminado (como pueden ser imágenes, videos, sonidos y texto libre) (Reneboldi, 2020).Por lo general, las bases de datos SQL (relacionales) son bases de datos estructuradas, mientras que las bases de datos no estructuradas no son aptas para una base de datos relacional convencional.
 
 
-# **2. Data frames**
+# **2. Estructura de datos en R**
 
-R es un lenguaje orientado a objetos. 
+## 2.1. Vectores
 
+R es un lenguaje orientado a objetos.
+Los objetos pueden ser usados para guardar valores y pueden modificarse (mediante funciones). 
+El objeto y estructura de datos básico en R es el vector. Existen dos tipos de vectores: vector atómico y listas.
+Los vectores atómicos almacenan datos de un mismo tipo, mientras que los elementos de una lista pueden tener diferentes tipos.
 
+Los vectores tienen tres propiedades comunes:
 
-Los principales objetos en R son vectores, matrices, arreglos, marcos de datos y listas
++ Tipo, typeof(), lo que es.
++ Longitud, length(), cuántos elementos contiene.
++ Atributos, attributes(), metadatos arbitrarios adicionales.
 
+### Vectores atómicos
 
-Los objetos pueden ser usados para guardar valores y pueden modificarse (mediante funciones) como por ejemplo sumar dos objetos o calcular la media. 
+En cuanto a los vectores atómicos, hay al menos cinco tipos comunes:
 
-El objeto más básico en R es un vector, que sólo puede contener objetos de la misma clase:
++ Doubles (o numéricos) : Guarda números regulares
++ Integers : Guarda números que pueden ser escritos sin un componente decimal
++ Characters: Guarda cadenas de texto. Los elementos individuales de un vector de tipo character son conocidos como strings.Hay que tener en cuenta que un strings, puede contener más que texto, como números…etc. En este caso, estas strings podrían contener caracteres númericos, pero no los convierte en numéricos, simplemente son strings que contienen números.Cualquier cosa que definamos entre las comillas (“”) R lo tratará comos un string.
++ Logicals: Guarda TRUEs y FALSEs
++ Complex: Guarda números complejos
++ Raw: Guarda bytes de datos
 
-- character
-- numeric (número real)
-- integer
-- complex
-- logical (True/False)
-
-Por otro lado, los **data frame** almacenan datos en forma de tablas (filas / columnas), como estamos habituados en Excel. Un data frame está compuesto de vectores de distintos tipos.
-
-Normalmente los data frame los creamos al cargar/leer una base de datos relacional, sin embargo podemos crear un data frame desde R para ver su estructura.
+Los vectores atómicos generalmente se crean con c():
 
 ```{r}
-presupuesto2021 = data.frame( prioridad= c("reactivación", "educación", "salud", "mujer","pobreza"),
-                              monto_millones = c(9879, 33132, 20991, 690, 5392))
+v1 = c(9879, 33132, 20991, 690, 5392)
+typeof(v1)
+length(v1)
+str(v1)
 ```
 
-Examinemos algunas características básicas del data frame:
+### Listas
+
+Las listas son diferentes de los vectores atómicos porque sus elementos pueden ser de cualquier tipo, incluidas las listas. 
+Se construyen listas usando list() en lugar de c():
 
 ```{r}
+l1 = list(5:20, "Hola", c(TRUE, FALSE, T), c(1 + 1i, 1 + 2i, 1 + 3i))
+typeof(l1)
+length(l1)
+str(l1)
+```
+
+### Atributos
+
+Todos los objetos pueden tener atributos adicionales arbitrarios, utilizados para almacenar metadatos sobre el objeto. 
+Los atributos pueden considerarse como una lista con nombre ( con nombres únicos ). Se puede acceder a los atributos individualmente con attr() o todo a la vez ( como una lista ) con attributes().
+
+```{r}
+attr(v1,"atributo") <- "Este es un vector"
+attributes(v1)
+```
+
+## 2.2. Factores
+
+Un uso importante de los atributos es definir los factores. Un factor es un vector que puede contener solo valores predefinidos y se usa para almacenar datos categóricos nominales y ordinales. 
+Los factores se construyen sobre vectores utilizando dos atributos: 
+
++ el class, “ factor ”, que los hace comportarse de manera diferente a los vectores enteros regulares 
++ el levels, que define el conjunto de valores permitidos.
+
+```{r}
+prioridad = c("reactivación", "educación", "salud", "mujer","pobreza")
+prioridad = factor(prioridad)
+class(prioridad)
+levels(prioridad)
+```
+
+Asimismo, podemos crear factores ordinales, que nos permitan almacenar variables categóricas ordinales. 
+
+```{r}
+ejecucion = c("Buena","Mala", "Intermedia","Mala", "Mala")
+ejecucion = factor(ejecucion, ordered = T, levels = c("Mala","Intermedia","Buena"))
+ejecucion
+```
+
+## 2.3. Data frames
+
+Los **data frame** almacenan datos en forma de tablas (filas / columnas), como estamos habituados en Excel. 
+Un data frame está compuesto de vectores de distintos tipos, pero de la misma longitud.
+
+Normalmente los data frame los creamos al cargar/leer una base de datos relacional, sin embargo podemos crear un data frame desde R .
+
+```{r}
+presupuesto2021 = data.frame( prioridad, v1,ejecucion)
+```
+
+Examinemos los atributos del data frame:
+
+```{r}
+str (presupuesto2021) #estructura 
 class(presupuesto2021) #clase del objeto
 nrow(presupuesto2021) #número de filas (casos)
 ncol(presupuesto2021) #número de columnas (variables)
 dim(presupuesto2021) #número de filas (casos) y columnas (variables) 
-str (presupuesto2021) #estructura 
-names(presupuesto2021) #nombre de las variables 
+names(presupuesto2021) #nombre de las columnas (variables) 
+rownames(presupuesto2021) #nombre de las filas
+length(presupuesto2021) #longitud
 head(presupuesto2021) #nos muestra las primeras 6 observaciones de la data
 tail(presupuesto2021) #nos muestra las 6 últimas observaciones de la data
 ```
@@ -75,14 +140,24 @@ Para acceder a los elementos de un data frame utilizamos los símbolos $ o [].
 Si queremos seleccionar la variable "monto_millones" de nuestro data frame:
 
 ```{r}
-presupuesto2021$monto_millones #opción 1
+presupuesto2021$v1 #opción 1
 presupuesto2021[2] #opción 2
 ```
 
 
-# **3. Cargar bases de datos de diversas extensiones en R**
+# **3. Importar datos**
 
-R nos permite importar y exportar bases de datos en diversas extensiones.
+El primer paso para nuestros objetivos del curso es la importación de datos ya sean estructurados o no estructurados, sobre los cuales trabajaremos la limpieza, transformación, visualización, modelamiento, y finalmente la comunicación.
+
+
+![](datos1.png)
+
+R nos permite importar, exportar e incluso convertir bases de datos en diversas extensiones. También nos permite extraer datos de fuentes de datos no estructurados, o recopilar datos de forma programada de alguna nube o servidor.
+
+
+## 3.1. Importación de datos estructurados
+
+R nos permite importar, exportar y convertir bases de datos estructuradas (relacionales) en diversas extensiones.
 
 ```{r,echo=FALSE, out.width="70%",fig.align="center"}
 knitr::include_graphics("datos.png") 
@@ -101,31 +176,76 @@ Algunas que usaremos en este curso son las siguientes:
 | XML       | Extensible Markup Language     |
 
 
+Un paquete muy versatil para realizar estas operaciones es "rio". Instalen el paquete con el siguiente comando:**install.packages("rio")**
+Es posible que desee ejecutar install_formats() después de la primera instalación.
+Mayor información: https://www.rdocumentation.org/packages/rio/versions/0.5.29
 
+### Exportar
 
-
-
-
-
-
-
-Los datos pueden estar en algun lugar de la web; si crees que esos datos permanecerán en ese sitio, quizás puedas sólo utilizar su link de descarga y leerlos directamente. Lo más seguro, en todo caso, es usarlos de esa manera y luego guardar esa data en tu **repositorio** del proyecto (en la ‘nube’). Esto facilitará su lectura y **replicabilidad**.
-
-NOTA: En el github no leemos el URL sino el **raw**
-
-Si por alguna razón deseas leerlos desde tu computadora, debes tener los archivos en la misma carpeta de tu R Markdown, R Notebook.
-
-Para cargar archivos de distintos formatos debemos cargar el paquete "rio". La libreria "rio" es muy versatil y permite importar datos en distintos formatos con el comendo **import()**
-
-Instalamos el paquete (por si no lo tienen), utilizando el siguiente comando:**install.packages("rio")**
-
-+ **Leyendo STATA**
-
-La encuesta LAPOP está en la web. Varios años son de libre acceso, pero podemos guardar una copia en GitHub, y leer esa copia desde ahí:
+Exportar datos se maneja con una función, export():
 
 ```{r}
 library(rio)
+export(presupuesto2021,"presupuesto.csv")
+```
 
+A partir de rio v0.5.0, export() también puede escribir múltiples data frames para hojas respectivas de un libro de Excel:
+
+```{r}
+export(list(hoja1 = presupuesto2021, hoja2 = presupuesto2021), file = "presupuesto.xlsx")
+```
+
+### Convertir
+
+convert() nos permite convertir un archivo en una extensión a otra.
+
+```{r}
+convert("presupuesto.csv","presupuesto.dta")
+```
+
+### Importar
+
+Podemos importar datos que pueden estar en diversas fuentes de datos: en nuestro ordenador, en un paquete de R, o en internet.
+Ojo: Toda data debe tener una guía metodológica o una descripción de las columnas (metadata) en su web original. Es bueno copiar y mantener una copia de esos materiales en tu proyecto.
+
+#### Importar datos desde nuestro ordenador
+
+Es como hemos venido trabajando habitualmente en nuestro anterior curso. Se requiere que el archivo esté en nuestro directorio de trabajo o en la misma carpeta de tu R Markdown, R Notebook.
+
+```{r}
+data = import("presupuesto.csv") 
+data2 = import_list("presupuesto.xlsx") #puedo importar un excel con muchas hojas
+```
+
+#### Importar datos desde un paquete de R
+
+Los paquetes en R son colecciones de funciones y conjunto de datos desarrollados por la comunidad. Los paquetes estan alojados en repositorios, desde el cuál podemos descargarlos.
+En ese caso, existen paquetes que también contienen bases de datos. 
+
+Por ejemplo: El  paquete de datos "wooldridge" contiene el conjunto de datos de "Introducción a la Econometría:Un Enfoque Moderno", que se puede cargar con la función data(). Mayor información del paquete: https://www.rdocumentation.org/packages/wooldridge/versions/1.3.1
+
+Lo primero es instalar y carga el paquete  que contiene 111 bases de datos:  install.packages("wooldridge")
+
+Luego puede llamar a la base de datos. En este caso llamaremos la base de datos "wage1". Estos son datos de la Encuesta de Población Actual de 1976, recopilada por Henry Farber cuando él y Wooldridge fueron colegas en el MIT en 1988.
+
+```{r}
+library(wooldridge)
+data("wage1") #llamamos a la base de datos
+?wage1 #consultamos su documentación
+```
+
+#### Importar datos desde internet
+
+Los datos pueden estar en algun lugar de la web; si crees que esos datos permanecerán en ese sitio, quizás puedas sólo utilizar su link de descarga y leerlos directamente. 
+Lo más seguro, en todo caso, es usarlos de esa manera y luego guardar esa data en tu **repositorio** del proyecto (en la ‘nube’). Esto facilitará su lectura y **replicabilidad**.
+
++ **Leyendo desde Github**
+
+Para este curso regularmente vamos a importar datos desde repositorios de Github. En el github no leemos el URL de la página sino el **raw**
+
+Ejemplo: La encuesta LAPOP está en la web. Varios años son de libre acceso, pero podemos guardar una copia en GitHub, y leer esa copia desde ahí:
+
+```{r}
 #Opción 1
 lkDTA="https://github.com/PoliticayGobiernoPUCP/estadistica_anapol2/raw/master/DATA/lapop2012.dta"
 dataStata=import(lkDTA)
@@ -134,44 +254,6 @@ dataStata=import(lkDTA)
 dataStata=import("https://github.com/PoliticayGobiernoPUCP/estadistica_anapol2/raw/master/DATA/lapop2012.dta")
 ```
 
-Toda data debe tener una guía metodológica o una descripción de las columnas (metadata) en su web original. Es bueno copiar y mantener una copia de esos materiales en tu proyecto.
-
-+ **Leyendo SPSS**
-
-Abramos el mismo archivo de LAPOP, pero en SPSS:
-
-```{r}
-lkSAV="https://github.com/PoliticayGobiernoPUCP/estadistica_anapol2/raw/master/DATA/lapop2012.sav"
-dataSpss=import(lkSAV)
-```
-
-+ **Leyendo Excel**
-
-El mismo archivo, pero en EXCEL:
-
-```{r}
-lkXLSX="https://github.com/PoliticayGobiernoPUCP/estadistica_anapol2/raw/master/DATA/lapop2012.xlsx"
-dataExcel=import(lkXLSX)
-```
-
-+ **Leyendo CSV**
-
-Recuerden que un archivo csv es delimitado por comas, sin embargo, siempre verifiquen cual es el separador de su ordenador. Si la data está en CSV, podemos usar rio, y también la función del R básico:
-
-```{r}
-lkCSV="https://github.com/PoliticayGobiernoPUCP/estadistica_anapol2/raw/master/DATA/lapop2012.csv"
-dataCSV=import(lkCSV)
-```
-
-Otra forma:
-
-```{r}
-lapop=read.csv("https://github.com/PoliticayGobiernoPUCP/estadistica_anapol2/raw/master/DATA/lapop2012.csv",                 # Nombre del archivo o ruta completa del archivo
-         header = TRUE,        # Leer el encabezado (TRUE) o no (FALSE)
-         sep = ",",            # Separador de los valores
-         dec = ".",            # Punto decimal
-         fill = TRUE)          # Rellenar celdas vacías (TRUE) o no (FALSE)
-```
 
 +   **Archivos de GoogleDoc**
 
@@ -185,18 +267,19 @@ dataDOC=read.csv(lkDOC)
 ```
 
 
-+   **Archivos de Datos Espaciales**
+#### Leer archivos de Datos Espaciales
 
-R también nos permite hacer análisis de datos geoespaciales. Esto es relevante, ya que mas del 70 de la información que utilizamos en cualquier tipo de
+R también nos permite hacer análisis de datos geoespaciales. Esto es relevante, ya que mas del 70% de la información que utilizamos en cualquier tipo de
 disciplina es, o puede ser, georreferenciada. Se trata de información a la cual puede asignarse una posición geográfica
 
 Los datos que pertenecen a una base de datos geográfica se componen de tres elementos la geometría, topología y atributos, por lo que se encuentran distribuidos en diversos archivos. 
 
-En este marco, el Formato SHAPEFILE es un conjunto de archivos que nos permiten almacenar la forma, ubicación y atributos de nuestros vectores shp. Son tres o más, con extensiones de archivo concretas que se deben almacenar en el mismo espacio de trabajo de proyecto.
+En este marco, el Formato SHAPEFILE es un conjunto de archivos que nos permiten almacenar la forma, ubicación y atributos de nuestros vectores shp. 
+Son tres o más, con extensiones de archivo concretas que se deben almacenar en el mismo espacio de trabajo de proyecto.
 
-Una de las formas de leer este tivo de datos es a través de ggplot. Vamos a leer el mapa de los departamentos del Perú, que hemos obtenido a través del portal GEO GPS PERÚ:https://www.geogpsperu.com/
+Una de las formas de leer este tipo de datos es a través de ggplot. Vamos a leer el mapa de los departamentos del Perú, que hemos obtenido a través del portal GEO GPS PERÚ:https://www.geogpsperu.com/
 
-Este mapa contiene 7 archivos en diversas extensiones. Para abrir el mapa utilizaremos la extensión shp., sin embargo todos los demás archivos deben estar en la carpeta sino no podrá ser posible la lectura.Instalamos ggplot2 y sf
+Este mapa contiene 7 archivos en diversas extensiones. Para abrir el mapa utilizaremos la extensión shp., sin embargo todos los demás archivos deben estar en la carpeta sino no podrá ser posible la lectura.**Antes instalamos ggplot2 y sf**
 
 ```{r}
 library(ggplot2)
@@ -209,9 +292,29 @@ mapa1
 
 # **4. Lugares ricos en datos (Bases estructuradas)**
 
-### INEI
+### Kaggle 
 
-Catálogo de base de datos INEI: https://www.inei.gob.pe/media/difusion/apps/ 
+Es una plataforma web que reúne la comunidad Data Science más grande del mundo, con más de 536 mil miembros activos en 194 países, recibe más de 150 mil publicaciones por mes, que brindan todas las herramientas y recursos más importantes para progresar al máximo en data science. 
+
+https://www.kaggle.com/
+
+### Datos PUCP
+
+PORTAL DE DATOS ABIERTOS:
+https://datos.pucp.edu.pe/dataverse/principal?q=&fq0=kindOfData_ss%3A%22Datos+de+encuestas%22&types=datasets&sort=dateSort&order=desc
+
+QLAB:
+https://qlab.pucp.edu.pe/centro-de-datos#:~:text=QLAB%20busca%20ser%20un%20centro,obtener%20informaci%C3%B3n%20desagregada%20y%20procesada.
+
+### Plataforma de Datos Abiertos
+
+DATOS ABIERTOS
+https://www.datosabiertos.gob.pe/
+
+### Instituto Nacional de Estadística e Informática (INEI)
+
+Catálogo de base de datos INEI: 
+https://www.inei.gob.pe/media/difusion/apps/ 
 
 BASES DE DATOS
 https://www.inei.gob.pe/bases-de-datos/
@@ -219,15 +322,8 @@ https://www.inei.gob.pe/bases-de-datos/
 ENCUESTAS-SISTEMAS DE CONSULTAS
 https://www.inei.gob.pe/sistemas-consulta/
 
-ENDES
-https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Endes2019/
-
-CENSO
-http://censo2017.inei.gob.pe/
-
-ENAPRES
-http://proyecto.inei.gob.pe/enapres/#
-
+CENSOS NACIONALES 2017
+https://censos2017.inei.gob.pe/redatam/
 
 ### MIDIS
 
@@ -237,42 +333,11 @@ http://sdv.midis.gob.pe/infomidis/#/
 REDINFORMA-MIDIS
 http://sdv.midis.gob.pe/redinforma/
 
-MI DISTRITO
-http://sdv.midis.gob.pe/RedInforma/Reporte/Reporte?id=18
-
-MI REGIÓN
-http://sdv.midis.gob.pe/RedInforma/Reporte/Reporte?id=17
-
-TABLERO DE CONTROL DE LA ANEMIA
-http://sdv.midis.gob.pe/RedInforma/Reporte/OtrosRecursos?id=1
-
-MI ÁMBITO
-http://sdv.midis.gob.pe/RedInforma/Reporte/Reporte?id=27
-
-FED
-http://www.midis.gob.pe/fed/sobre-el-fed/el-fed
-
 EVIDENCIA MIDIS
 http://evidencia.midis.gob.pe/
 
 INFOJUNTOS
 http://www2.juntos.gob.pe/infojuntos/
-
-INFO PENSIÓN
-https://www.pension65.gob.pe/nuestros-usuarios/infopension/
-https://www.pension65.gob.pe/publicaciones/informes-y-estudios/
-
-### Ministerio de Economía y Finanzas
-
-MEF-EVALUACIONES
-EVALUACIONES DE IMPACTO
-https://www.mef.gob.pe/es/?option=com_content&language=es-ES&Itemid=100751&view=article&catid=624&id=5357&lang=es-ES
-
-Evaluaciones de Diseño y Ejecución Presupuestal (EDEP)
-https://www.mef.gob.pe/es/?option=com_content&language=es-ES&Itemid=100751&view=article&catid=211&id=5356&lang=es-ES
-
-MEF: datos abiertos
-http://www.mef.gob.pe/datos_abiertos/index.html
 
 ### MINISTERIO DE VIVIENDA-MVCS
 
@@ -283,32 +348,16 @@ https://datass.vivienda.gob.pe/
 
 REUNIS
 https://www.minsa.gob.pe/reunis/
-https://www.minsa.gob.pe/reunis/data/Anemia_Infantil.asp
-https://www.datosabiertos.gob.pe/group/datos-abiertos-de-covid-19
 
 ### MIMP
 
 ESTADÍSTICAS
 https://www.mimp.gob.pe/omep/estadisticas-violencia.php
 
-SEGUIMIENTO
-https://www.mimp.gob.pe/omep/marco-conceptual-seguimiento.php
-
-EVALUACIÓN
-https://www.mimp.gob.pe/omep/marco-conceptual-evaluacion.php
-
-### Banco Mundial: estadísticas
-http://data.worldbank.org/
-https://govdata360.worldbank.org
-
-### CEPAL: publicaciones y estadísticas
-http://estadisticas.cepal.org/cepalstat/WEB_CEPALSTAT/Portada.asp
-
 ### Educación
 
 ESCALE (Estadística de la Calidad Educativa)
 http://escale.minedu.gob.pe/
-
 
 ### ONPE
 
@@ -321,30 +370,25 @@ https://www.datosabiertos.gob.pe/dataset/resultados-por-mesa-de-las-elecciones-p
 RESULTADOS - ELECCIONES CONGRESALES 2021
 https://www.datosabiertos.gob.pe/dataset/resultados-por-mesa-de-las-elecciones-congresales-2021-oficina-nacional-de-procesos
 
+### Banco Mundial: estadísticas
+
+http://data.worldbank.org/
+https://govdata360.worldbank.org
+
+### CEPAL: publicaciones y estadísticas
+
+http://estadisticas.cepal.org/cepalstat/WEB_CEPALSTAT/Portada.asp
 
 ### FMI: data
+
 http://www.imf.org/data
 
-### Objetivos de Desarrollo del Milenio: estadísticas
-http://mdgs.un.org/unsd/mdg/Data.aspx
-
-### OIT: estadísticas y bases de datos
-http://www.ilo.org/global/statistics-and-databases/lang–es/inde x.htm
-
 ### PNUD: Índice de Desarrollo Humano
+
 http://hdr.undp.org/es
-
-### SIEA: estadísticas
-http://siea.minagri.gob.pe/siea/
-
-### SITEAL: estadísticas
-http://www.siteal.iipe-oei.org/
 
 ### UNESCO: estadísticas
 http://es.unesco.org/gem-report/
-
-### UNICEF: estadísticas
-http://www.unicef.org/spanish/statistics/
 
 ### Barómetro de las Américas (LAPOP)
 http://datasets.americasbarometer.org/database/login.php
