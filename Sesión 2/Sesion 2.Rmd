@@ -16,64 +16,56 @@ output:
 knitr::include_graphics("logoPUCP.png") 
 ```
 
-Existe una web para máquinas y otra para humanos (el mundo del HTML, lo que todos usamos a diario al acceder a páginas web en nuestro ordenador). Hoy vamos a aprender a bajar información de ambas fuentes de datos.
+Hasta el momento hemos aprendido a importar datos estructurados desde nuestro ordenador, una web o paquetes de R. Hoy aprenderemos a importar datos desde servicios web que proporcionan información a través de "APIs" que son consultadas directamente por ordenadores. Asimismo, aprenderemos a extraer información no estructurada de manera programática de las páginas web usando las técnicas de "scraping".
 
-Hoy aprenderemos a descargar datos desde servicios web que proporcionan información a través de "APIs" que son consultadas directamente por ordenadores. Asimismo, aprenderemos a bajar información programáticamente de las páginas web usando las técnicas de "scraping".
+# **1. Uso de las APIs**
 
-# **1. Uso de los APIs**
+*Video sobre qué son las APIs*: <https://www.youtube.com/watch?v=u2Ms34GE14U&t=105s>
 
-*Video sobre qué son las APIs*: <https://www.youtube.com/watch?v=rq6gdwEbowU>
+API significa "Aplication Programming Interface" y se puede entender como un mecanismo que nos permite interactuar con un servidor de internet para acceder e intercambiar información. Una API cuenta con un interfaz para interactuar con el sistema sin necesidad de saber qué está detrás, y permite que se comuniquen aplicaciones o programas de software y compartan datos entre ellos, bajo ciertos estándares.
 
-Hay organizaciones que tienen una política de datos abiertos, por lo que ofrecen un portal ad-hoc para que se pueda acceder a sus datos, controlando el historial de algunos datos que se incrementa continuamente (diariamente, semanalmente, etc.).
+Las APIs facilitan mucho la recopilación de datos al poderse acceder a ellas de forma programática ya que proveen de un proceso de acceso a ellos estandarizado: se envía una "http request" a la API y se reciben los datos en un determinado formato, generalmente en JSON o XML. 
 
-Estos portales cuentan con APIs, que significa "Aplication Programming Interface" y se puede entender como un mecanismo que nos permite interactuar con un servidor de internet, y construir pedidos de datos a través de una dirección web, de tal manera que podamos acceder a la información en tiempo real, visualizar el historial y sus actualizaciones.
+Vamos a ver en este curso, cómo obtener datos de una API REST en formato JSON (no es la única, pero son unas de las formas más usadas). Para este fin vamos a poner algunos ejemplos de API, sin embargo, usted debe tomar en cuenta que cada API en particular tiene una guia de uso y documentación que tiene que ser tomada en cuenta según sea el caso.
 
-Las APIs facilitan mucho la recopilación de datos al poderse acceder a ellas de forma programática ya que proveen de un proceso de acceso a ellos estandarizado: se envía una "http request" a la API y se reciben los datos en un determinado formato, generalmente JSON o XML. 
+## Uso de API de OEFA
 
-Vamos a ver en este curso, cómo obtener datos de una API en formato JSON.
+Vamos a hacer un ejemplo, extrayendo datos del portal "Datos Abiertos" del Organismo de Evaluación y Fiscalización Ambiental (OEFA). La OEFA es un organismo público, técnico especializado, adscrito al Ministerio del Ambiente de Perú encargado de la fiscalización ambiental en todo el territorio peruano.
 
-**Ejemplo**
+Entremos al siguiente link y exploremos el portal brevemente: <https://datosabiertos.oefa.gob.pe/home>
 
-Vamos a hacer un ejemplo, extrayendo datos del portal "Datos Abiertos" de la Municipalidad Metropolitana de Lima. Entremos al siguiente link y exploremos el portal brevemente: <https://aplicativos.munlima.gob.pe/extranet/datos-abiertos/>
+En la categoría "Políticas y Estrategias en fiscalización ambiental", podemos encontrar data administrativa sobre las políticas e instrumentos de política pública ejecutados por la OEFA.
 
-En la categoría "Fiscalización y control", podemos encontrar data sobre las sanciones administrativas realizadas por la MML en el mes de diciembre del año pasado. 
+Vamos a explorar el componente de **"fortalecimiento de capacidades en fiscalización ambiental"**: <https://datosabiertos.oefa.gob.pe/dashboards/20548/fortalecimiento-de-capacidades-en-fiscalizacion-ambiental/> Damos click a la rueda de ajustes y leemos la información.
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("sanc_admin.png") 
-```
+![](api1.png)
 
-Si le das click a "Obtén tu API key aquí", te dirigirá a una web que indica cómo hacer uso del API: <https://datosabiertos.munlima.gob.pe/developers/>
+Si le das click a "Obtén tu API key aquí", te dirigirá a una web que indica cómo hacer uso del API: <https://datosabiertos.oefa.gob.pe/developers/>
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("api.png") 
-```
+![](api2.png)
 
 Vamos a ejecutar estos pasos en R.
 
-+   Lo primero que te sugiere el API es que obtengas tu llave (API_KEY). Consigue dando click donde indica, y guardala como objeto.
+-   Lo primero que te sugiere el API es que obtengas tu llave (API_KEY). Consigue dando click donde indica, y guardala como objeto.
 
 ```{r}
-miLLAVE="oKIs8cTkNuby9sDsbmLMPr27ulIqY43auxiEDnnw"
+miLLAVE="Tb8cWCER3JfE3DzbFcesiriPnTwURPuuz7NWmvNU"
 ```
 
-+ Luego, te indica que construyas una solicitud (request) para colectar los datos. Según lo que nos dice la página, la estructura del request está conformada por:
+-   Luego, te indica que construyas una solicitud (request) para colectar los datos. según lo que nos dice la página, la estructura del request está conformada por:
 
-**El link del api de la página  + el request para invocar que retornará en json + el GUID + el formato + mi clave (la que guardamos en el paso anterior).**
+**El link del api de la página + el request para invocar que retornará en json + el GUID + el formato + mi clave (la que guardamos en el paso anterior).**
 
 **NOTA: El link lo obtenemos de la siguiente manera:**
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("guid.png") 
-```
+![](api3.png)
 
-
-Procedemos entonces a crear nuestro request. 
-Vamos a crear el link en objetos en función de los componentes mencionados anteriormente. Esto es solo para fines didácticos, en el futuro ustedes pueden armar un link completo en sus notas y utilizarlo como request.
+Procedemos entonces a crear nuestro request. Vamos a crear el link en objetos en función de los componentes mencionados anteriormente. Esto es solo para fines didácticos, en el futuro ustedes pueden armar un link completo en sus notas y utilizarlo como request.
 
 ```{r}
-link="http://api.datosabiertos.munlima.gob.pe"
+link="http://api.datosabiertos.oefa.gob.pe"
 RQJSON="/api/v2/datastreams/"
-GUID="SANCI-ADMIN-ENERO-MARZO-2022"
+GUID="ACTIV-AFA-36113"
 FORMATO="/data.json/" 
 KEY="?auth_key="
 ```
@@ -85,60 +77,54 @@ request=paste0(link,RQJSON,GUID,FORMATO,KEY,miLLAVE) # La función paste0 la usa
 request #mirala
 ```
 
-+ Finalmente, procesamos nuestra respuesta.
+-   Finalmente, procesamos nuestra respuesta.
 
-R necesita que instales jsonlite para poder interpretar formato JSON; luego de hacerlo, habilítala. De aquí, ya podrías colectar la data:
+R necesita que instales jsonlite para poder interpretar formato JSON; luego de hacerlo, habilítala.De aquí, ya podrías colectar la data:
 
 ```{r}
 library(jsonlite) 
-MML = fromJSON(request) 
-str(MML)
+OEFA = fromJSON(request) 
+str(OEFA)
 ```
 
-Si visualizas el objeto creado, verás que este pedido no se parece a lo que necesitas, ya que la estructura nos indica una serie de listas. 
+Si visualizas el objeto creado, verás que este pedido no se parece a lo que necesitas, ya que la estructura nos indica una serie de listas.
 
 Para corregir esto, la documentación de API (<https://junar.github.io/docs/es/>), nos dice que podemos pedir otro formato para la vista de datos, el "PJSON":
 
 ```{r}
 FORMATO='/data.pjson/'
 request2=paste0(link,RQJSON,GUID,FORMATO,KEY,miLLAVE)
+request2
 ```
 
 Usemos la nueva solicitud:
 
 ```{r}
-MML = fromJSON(request2)
+OEFA = fromJSON(request2)
 ```
 
 Veamos su estructura:
 
 ```{r}
-str(MML)
+str(OEFA)
 ```
 
 Para acceder a los datos en formato tabla de esa solicitud debemos acceder al elemento result y convertirlo en data frame:
 
 ```{r}
-dataMML=data.frame(MML$result)
-head(dataMML)
+dataOEFA=data.frame(OEFA$result)
+head(dataOEFA)
 ```
 
-Con esta ruta vamos a poder obtener los datos en tiempo real, de las posibles actualizaciones que la MML haga sobre sus acciones administrativas!
+Con esta ruta vamos a poder obtener los datos en tiempo real, de las posibles actualizaciones que la OEFA haga sobre sus capacitaciones en fiscalización ambiental! Hasta el momento, tenemos datos hasta el DICIEMBRE DE 2022. Intentemos en un futuro a ver qué pasa!!!
 
-Ahora, alguien que nos apoye con otro ejemplo utilizando data de la OEFA con este link: <https://datosabiertos.oefa.gob.pe/home>
-
-
-# **2. 'Scraping' tablas de datos**
+# **2. 'Scraping'**
 
 *Video sobre qué es el scrapping*: "What is Web Scraping and What is it Used For?" <https://www.youtube.com/watch?v=Ct8Gxo8StBU>
-
 
 Ahora aprendamos a bajar información programáticamente de las páginas web usando las técnicas de "scraping".
 
 En la vida real, no siempre nos darán las bases de datos listas para trabajar con ella,en muchos casos debemos descargarlas de páginas web y debemos limpiar y ordenar nuestra bbdd.
-
-*Librerias necesarias* (si no las tiene, instale)
-
 
 ## Opción 1
 
@@ -148,46 +134,18 @@ Las tablas de datos en la web pueden ser descargadas con facilidad, si se consig
 
 Vamos a extraer la tabla de los resultados del "Democracy Index" por país, de la siguiente dirección: <https://en.wikipedia.org/wiki/Democracy_Index>
 
-Estando en esa página usando **GoogleChrome** ubícate en la tabla e inspecciona usando el boton derecho:
+Estando en esa página usando **GoogleChrome** ubícate en la tabla e inspecciona usando el boton derecho, y copia el fullxpath
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("web.png") 
-```
+![](web1.png)
 
-Debes inspeccionar hasta que se resalte tu tabla:
-
-Nota que en este caso tienes varias tablas, debes ser muy preciso en tu selección. Una vez haya identificado bien tu tabla, usa nuevamente el botón derecho sobre el código en html y copia el full XPATH. 
-
-En **firefox** el procedimiento es el mismo.
-
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
-knitr::include_graphics("web2.png") 
-```
-
-Para extraer nuestra base de datos, utilizamos la función "htmltab":
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-library(htmltab)
-```
+Para extraer esta table y convertirla en data frame, usamos el siguiente código:
 
 ```{r}
-link = "https://en.wikipedia.org/wiki/Democracy_Index"
-path = "/html/body/div[3]/div[3]/div[5]/div[1]/table[5]"
-dataWS = htmltab(link, path)
-head(dataWS)
-```
-
-Otro ejemplo:
-
-De la página web de la CIA, vamos a extraer una tabla sobre el PBI percápita: https://www.cia.gov/the-world-factbook/field/real-gdp-per-capita/country-comparison
-
-Procedemos: 
-
-```{r}
-linkCIA_pbi = "https://www.cia.gov/the-world-factbook/field/real-gdp-per-capita/country-comparison"
-linkPath_pbi='/html/body/div/div[1]/div[2]/main/section[2]/div/div/div[2]/div/div/div/div/div/table'
-dataWS2 = htmltab(linkCIA_pbi, linkPath_pbi)
-head(dataWS2)
+library(rvest)
+url = read_html("https://en.wikipedia.org/wiki/Democracy_Index")
+table = html_nodes(url, xpath='/html/body/div[2]/div/div[3]/main/div[3]/div[3]/div[1]/table[5]')
+table = html_table (table)
+table =data.frame(table)
 ```
 
 ## Opción 2
@@ -205,13 +163,11 @@ Para estas ocasiones, **rvest** nos sirve.
 
 + Primero, abrimos la libreria y creamos un objeto con el link de la página web. Asimismo, obtenemos el código html de la web, con la función "read_html". Esto lo ponemos dentro de un objeto.
 
-
 ```{r}
 library(rvest)
 url="https://www.gob.pe/institucion/rree/funcionarios"
 pagina_web=read_html(url)
 ```
-
 
 + Para scrapear vamos a requerir obtener la clase CSS de los campos que necesitamos. En términos sencillos, la clase CSS es un código que identifica a uno o varios elementos HTML. En esta página web, "Nombre" y "Cargo" han sido programados con una clase CSS para cada una.
 
@@ -221,7 +177,7 @@ Esta clase CSS la podemos obtener de la siguiente manera. Comencemos por Nombre
 
 + Luego, automaticamente en la parte derecha se nos abrirán los códigos resaltando el que pertenece a ese espacio, colocamos nuestro mouse por encima de esa linea resaltada del código y se nos aparecerá la clase CSS. Ese código lo escribimos copiamos.
 
-```{r,echo=FALSE, out.width="40%",fig.align="center"}
+```{r,echo=FALSE, out.width="100%",fig.align="center"}
 knitr::include_graphics("web3.png") 
 ```
 
@@ -274,7 +230,6 @@ head(grupo_texto)
 dataWS4 <- data.frame(NOMBRE = nombre_texto, GRUPO = grupo_texto)
 head(dataWS4)
 ```
-
 
 Uno más complejo: la página de funcionarios/as del MEF
 
@@ -335,59 +290,4 @@ Ahora convertimos todo en una base de datos
 dataWS6 = bind_rows(final_table)
 head(dataWS6)
 ```
-
-También podemos combinar loops con *htmltab*:
-
-```{r}
-url = "http://search.beaconforfreedom.org/search/censored_publications/result.html?author=&cauthor=&title=&country=7327&language=&censored_year=&censortype=&published_year=&censorreason=&sort=t&page="
-path = "/html/body/div/div[2]/div[2]/table"
-final_table = list()
-```
-
-Creamos la función e iteracción (solo lo haremos con las primeras 10 páginas para que no demore mucho):
-
-```{r warning=FALSE}
-for(i in 1:10) {
-  data <- htmltab((paste0(url, i)),path)
-
-final_table[[i]] <- data.frame(data, stringsAsFactors = F)
-}
-```
-
-Ahora convertimos todo en una base de datos
-
-```{r}
-dataWS7 = bind_rows(final_table)
-head(dataWS7)
-```
-
-Practiquemos extrayendo data de este link: <https://www.gob.pe/institucion/minsa/funcionarios>
-
-
-# **3. Exportar la base de datos**
-
-Finalmente ¿Cómo exportamos las bases de datos que hemos obtenido? 
-En muchos casos nos va ser útil exportar a CSV,lo podemos hacer con la función export del paquete rio:
-
-```{r}
-library(rio)
-export(dataWS, "midata.csv") 
-```
-
-También podemos exportar en formato R:
-
-```{r}
-save(dataWS2,file="midata.Rda")
-```
-
-Si hay problemas con el encoding:
-
-
-```{r}
-#export(dataWS1, "dataWS1.csv")
-#dataWS1 = import("dataWS1.csv", encoding = "UTF-8")
-#head(dataWS1)
-```
-
-
 
