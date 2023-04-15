@@ -142,8 +142,10 @@ Para extraer esta table y convertirla en data frame, usamos el siguiente código
 
 ```{r}
 library(rvest)
-url = read_html("https://en.wikipedia.org/wiki/Democracy_Index")
-table = html_nodes(url, xpath='/html/body/div[2]/div/div[3]/main/div[3]/div[3]/div[1]/table[5]')
+url = "https://en.wikipedia.org/wiki/Democracy_Index"
+fullxpath = '/html/body/div[2]/div/div[3]/main/div[3]/div[3]/div[1]/table[5]'
+url = read_html(url)
+table = html_nodes(url, xpath= fullxpath)
 table = html_table (table)
 table =data.frame(table)
 ```
