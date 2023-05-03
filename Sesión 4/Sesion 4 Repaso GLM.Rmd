@@ -1,5 +1,5 @@
 ---
-title: "Sesión 4. Modelos Lineales Generalizados"
+title: "Sesión 4. Modelos No Lineales o GLM"
 output:
   html_document: default
   word_document: default
@@ -93,7 +93,7 @@ data$EDAD = as.numeric(data$EDAD)
 ```{r}
 library(stargazer)
 modelo1<-glm(indiceAC~EDAD,
-             family=poisson,
+             family=poisson (link = "log"),
              data=data)
 
 stargazer(modelo1,type = "text",intercept.bottom = FALSE,style="all2")
@@ -102,24 +102,29 @@ stargazer(modelo1,type = "text",intercept.bottom = FALSE,style="all2")
 El impacto de la variable EDAD es negativo y estadísticamente significativo sobre la probabilidad de ser víctima de acoso callejero. Pero el coeficiente no puede interpretarse de forma directa. Calculamos exponencial:
 
 ```{r}
-edad=coef(modelo1)[['EDAD']] #Guardamos el coeficiente
-E_Edad=exp(edad) #Le sacamos la exponencial
-(CambioEdad=100*(1-1/E_Edad)) #Al ser negativo, se le saca 1-1/exp(B)
+library(modelsummary)
+modelsummary(modelo1,
+             exponentiate = T, 
+             statistic = 'conf.int',
+             title = "EXP() de la Regresión Poisson para Interpretación",
+             stars = TRUE,
+             output = "kableExtra")
 ```
 
-Interpretación: 
 
-Al aumentar en un año de edad, el número de eventos de acoso callejero va a disminuir en 0.032 veces. O dicho de otra forma, cuando una persona incrementa en un año su edad, el número de eventos de acoso callejero va a disminuir en 3.32%
+Nota que mientras en la regresión lineal no deseábamos que nuestro coeficiente esté cerca al cero, es decir, que su intervalo de confianza no incluya al cero, aquí no deseamos que el intervalo de confianza incluya al uno. Una vez exponenciado, podemos interpretar los coeficientes de manera más sencilla. 
+Nótese que esta regresión propone un efecto multiplicativo sobre el valor medio de la respuesta (la regresión OLS o Gaussiana propone un efecto aditivo).
+
+Interpretación: para el modelo se ve que por cada unidad que aumente la edad el la probabilidad de ser victima de acoso callejero se multiplica por 0.968. En otras palabras, disminuiría en 3.2 % 
+
 
 Nótese que esta regresión propone un efecto multiplicativo sobre el valor medio de la respuesta (la regresión Gaussiana propone un efecto aditivo). 
-
-
 
 **Modelo 2**
 
 ```{r}
 modelo2<-glm(indiceAC~SEXO,
-             family=poisson,
+             family=poisson (link = "log"),
              data=data)
 
 stargazer(modelo2,type = "text",intercept.bottom = FALSE,style="all2") #categoria de referencia Hombre
@@ -128,14 +133,17 @@ stargazer(modelo2,type = "text",intercept.bottom = FALSE,style="all2") #categori
 Calculamos exponencial
 
 ```{r}
-mujer=coef(modelo2)[['SEXOMujer']]
-E_mujer=exp(mujer)
-(CambioMujer=100*(E_mujer))
+modelsummary(modelo2,
+             exponentiate = T, 
+             statistic = 'conf.int',
+             title = "EXP() de la Regresión Poisson para Interpretación",
+             stars = TRUE,
+             output = "kableExtra")
 ```
 
 Interpretación: 
 
-Si una persona es mujer, el número de eventos de acoso callejero va a aumentar en 3.7 veces. Cuando una persona es mujer, el número de eventos de acoso callejero va a aumentar en 376%.
+Si una persona es mujer, el número de eventos de acoso callejero va a aumentar en 3.7 veces. Cuando una persona es mujer, la probabilidad de sufrir acoso callejero va a aumentar en 376%.
 
 
 **Comparación de modelos**
@@ -161,11 +169,10 @@ dotwhisker::dwplot(list(Poisson1=modelo1,Poisson2=modelo2),exp=T)  +
            linetype = 2)
 ```
 
+### Equidispersión 
 
-
-### ¿Qué pasa cuando hay Sobredispersión? 
-
-Uno de los supuestos era que la media y la varianza sean iguales. Si la varianza es mayor que la media, hablamos de sobredispersión (subdispersion si es menor que la media). Veamos:
+Uno de los supuestos era que la media y la varianza sean iguales. Si la varianza es mayor que la media, hablamos de sobredispersión (subdispersion si es menor que la media). 
+Para comprobar hacemos el test de equidispersión
 
 ```{r}
 overdispersion=AER::dispersiontest(modelo1,alternative='greater')$ p.value<0.05
@@ -177,26 +184,36 @@ names(testResult)='Es probable?'
 testResult
 ```
 
+La Tabla muestra que es altamente improbable que la varianza sea igual a la media, por lo que se opta por aceptar que lo más probable es que tengamos sobredispersión.
+
+
 ```{r}
 VarY=data$indiceAC #Variable dependiente
 list(media=mean(VarY,na.rm=T),varianza=var(VarY,na.rm=T),razon=var(VarY,na.rm=T)/mean(VarY,na.rm=T))
 ```
 
-
 Veamos de solucionarlo:
 
-**Quaipoisson**
+**Quasipoisson**
 
 ```{r}
-reg1quasi = glm(indiceAC~EDAD, family = quasipoisson, data = data)
-stargazer(reg1quasi,type = "text",intercept.bottom = FALSE,style="all2")
+reg1quasi = glm(indiceAC~EDAD, family = quasipoisson(link = "log"), data = data)
+stargazer(modelo1,reg1quasi,type = "text",intercept.bottom = FALSE,style="all2")
 ```
 
-Comparamos cuál es el mejor modelo:
+Vemos que los coeficientes no han cambiado, pero observemos los residuos:
 
 ```{r}
-anova(modelo1,reg1quasi, test = "Chisq")
+library(arm)
+cbind(sePoi=se.coef(modelo1),seQuasiPoi=se.coef(reg1quasi))
 ```
+
+Nota además ambos modelos tienen diferente parámetro de dispersion:
+
+```{r}
+summary(modelo1)$dispersion; summary(reg1quasi)$dispersion
+```
+
 
 ```{r}
 dotwhisker::dwplot(list(Poisson1=modelo1,QuasiPoisson=reg1quasi),exp=T)  +
@@ -206,20 +223,30 @@ dotwhisker::dwplot(list(Poisson1=modelo1,QuasiPoisson=reg1quasi),exp=T)  +
            linetype = 2)
 ```
 
+La regresión quasipoisson lidia mejor con la sobredispersión, cuyo efecto concreto fue sobre los errores típicos, lo que afectaría la significancia de los predictores.
+
 
 **Binomial negativa**
+
+Otra alternativa ante la sobredispersión es usar la regresión binomial negativa. 
+
 
 ```{r}
 library(MASS)
 nb <- glm.nb(indiceAC~EDAD, data = data)
-stargazer(nb,type = "text",intercept.bottom = FALSE,style="all2")
+stargazer(modelo1,reg1quasi,nb, type = "text",intercept.bottom = FALSE,style="all2")
 ```
 
 Vemos que la binomial negativa responde mejor y corrige los errores:
 
 ```{r}
-anova(modelo1,reg1quasi,nb, test = "Chisq")
+library(dplyr)
+library(knitr)
+anova(modelo1,reg1quasi,nb, test = "Chisq") %>%
+kable(caption = "Tabla ANOVA para comparar modelos")%>%kableExtra::kable_styling(full_width = FALSE)
 ```
+
+La caída del Deviance es tanta para el último caso que la mejor opción es la binomial negativa. Por lo general, la binomial negativa es más utilizada que la quasipoisson, pero la binomial negativa no es apropiada para la subdispersión, mientras que la quasipoisson sí se usa para ese caso.
 
 ```{r}
 library(ggplot2)
@@ -348,33 +375,37 @@ Los coeficientes, están modelando al logaritmo del odds de ser voluntario.
 ¿Cuál es el efecto de las X sobre el Odds de la dependiente?
 
 ```{r}
-#Edad
-exp(coef(modelo1)["EDAD"])
-
-#Confianza en el congreso
-exp(coef(modelo1)["conf_conNoTrust"])
-
-#Democracia
-exp(coef(modelo1)["demoNo"])
+modelsummary(modelog,
+             exponentiate = T, 
+             statistic = 'conf.int',
+             title = "Regresión Logísticas (Coeficientes Exponenciados)",
+             stars = TRUE,
+             output = "kableExtra")
 ```
+
+
+Interpretación:
++ El odds de creer que la democracia puede funcionar sin el Congreso de la República, disminuye en 0.8% cada vez que la edad aumenta en uno (No significativa)
++ El odds de creer que la democracia puede funcionar sin el Congreso de la República, aumenta en 47.9% cuando no se tiene confianza en el congreso
++ El odds de creer que la democracia puede funcionar sin el Congreso de la República, aumenta en 56.8% cuando no se está satisfecho con la democracia
+
 
 Calculamos efectos marginales (lenguaje probabilístico)
 
 ```{r}
 library(margins)
-model = margins(modelo1) #visualicemos esto en la consola
+model = margins(modelog) #visualicemos esto en la consola
 margins=summary(model)#Otra forma, aqui vemos los AME. visualicemos esto en la consola
 margins$ef = margins$AME*100
 margins
 ```
 
-+ En promedio, por cada nivel de edad, la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República, disminuye en 0.2%
+Para no hablar en términos de odds sino en lenguaje probabilístico, calculamos los efectos marginales, que se interpretan de la siguiente manera:
 
-+ En promedio, por cada nivel de ideología (derecha), la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República, disminuye en 2%
++ En promedio, no confiar en el congreso, aumenta en 0.0920 la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República.
++ En promedio, no estar satisfecho con la democracia, aumenta en 0.10 la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República.
++ En promedio, el incremento de un punto de le edad, disminuye en 0.0020 la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República. (No significativa)
 
-+ En promedio, la ausencia de confianza en el Congreso aumenta la probabilidad de creer que la democracia puede funcionar sin Congreso en 9%
-
-+ Estar insatisfecho con la democracia aumenta la probabilidad de creer que la democracia puede funcionar sin Congreso en 10%
 
 ### Graficamos
 
@@ -393,22 +424,20 @@ base
 
 Valores concretos:
 
-La probabilidad de creer que la democracia puede funcionar sin Congreso, teniendo 18 años, desconfiando del Congreso, estando insatisfecho con la democracia y creyendo que la situación económica está peor: 51%
+La probabilidad de creer que la democracia puede funcionar sin Congreso, teniendo 18 años, desconfiando del Congreso, y estando insatisfecho con la democracia: 51%
 
 ```{r}
-ToInput1 <- data.frame(conf_con=c("NoTrust"),demo=c("No"),sit_eco=c("Worst"), 
-                      EDAD=18)
-predict(object = modelo1, newdata = ToInput1, type = "response")
+ToInput1 <- data.frame(conf_con=c("NoTrust"),demo=c("No"), EDAD=18)
+predict(object = modelog, newdata = ToInput1, type = "response")
 ```
 
-Para la misma edad, pero con mejores percepciones:33%
+Para la misma edad, pero con confianza en el congreso y satisfecho con la democracia:31%
 
 ```{r}
-ToInput1 <- data.frame(conf_con=c("Trust"),demo=c("Yes"),sit_eco=c("Better"), 
+ToInput1 <- data.frame(conf_con=c("Trust"),demo=c("Yes"), 
                       EDAD=18)
-predict(object = modelo1, newdata = ToInput1, type = "response")
+predict(object = modelog, newdata = ToInput1, type = "response")
 ```
-
 
 
 ### c. Regresión Cox
@@ -493,7 +522,9 @@ autoplot(KM.sex,xlab=ejeX,ylab=ejeY,
          scale_color_discrete(labels = c("Hombre", "Mujer"))
 ```
 
+
 Efectivamente, parece que la mejor no pinta tan bien para los hombres. Veamos los intervalos de confianza:
+
 
 ```{r}
 LogRank=survdiff(KM_H1, data = lung)
@@ -522,6 +553,5 @@ Vemos que el género tiene un impacto negativo sobre la probabilidad de fallecim
 ```
 
 Esto ya se puede interpretar: ser mujer está asociado con un mejor pronóstico, reduciendo las probabilidades de ocurrencia del evento en 40%.
-
 
 
