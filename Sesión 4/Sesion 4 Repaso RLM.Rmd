@@ -66,7 +66,7 @@ summary(modelo1)
 **Modelo 2**
 
 ```{r}
-modelo2<-lm(salario_actual~salario_inicial + antiguedad + experiencia, data)
+modelo2<-lm(salario_actual~salario_inicial + educ + antiguedad + experiencia, data)
 summary(modelo2)
 ```
 
@@ -77,16 +77,51 @@ library(stargazer)
 stargazer(modelo1,modelo2, type ="text")
 ```
 
+Tambien podemos mostrar los resultados de la siguiente manera:
+
+```{r}
+library(modelsummary)
+models = list(modelo1,modelo2)
+modelsummary(models, output = "kableExtra")
+```
+
+
 ¿Qué modelo es el mejor? Veamos el R2 y el aporte de las variables. También podemos utilizar anova para comparación de modelos.
 La comparación de modelos usando la tabla de análisis de varianza (anova) propone como hipótesis nula que los modelos no difieren (no se ha reducido el error al pasar de un modelo a otro).
 
+```{r}
+library(dplyr)
+library(magrittr)
+library(knitr)
+tanova=anova(modelo1,modelo2)
+tanova
+kable(tanova,
+      caption = "Tabla ANOVA para comparar modelos")%>%kableExtra::kable_styling(full_width = FALSE)
+```
+
+La comparación de modelos usando la tabla de análisis de varianza (anova) propone como hipótesis nula que los modelos no difieren (no se ha reducido el error al pasar de un modelo a otro). Como la comparación es significativa (vea el Pr(>F)), rechazamos igualdad de modelos: el modelo 2 sí reduce el error al incluir una variable más.
+
 Nos quedamos con el modelo 2
+
+Tambien podemos indagar los efectos de los regresores con coeficientes estandarizados:
+
+```{r}
+modelo2b=formula(scale(salario_actual)~scale(salario_inicial)+scale(educ)+scale(antiguedad)+scale(experiencia))
+reg2b=lm(modelo2b,data)
+model2b=list(reg2b)
+modelsummary(model2b, title = "Regresion: modelo con \ncoeficientes estandarizados",
+             stars = TRUE,
+             output = "kableExtra")
+```
+
+
+
 
 ## Diagnósticos de la regresión
 
 ### 1. Linealidad
 
-Se asume una relación lineal de las Ys y las Xs. Para evaluar la linealidad podemos utilizar un gráfico residual que evalúa los residuos y los valores Esperados de Y. La diferencia entre el valor observado de la variable dependiente (y) y el valor predicho (ŷ) se denomina residuo (e). Cada punto de datos tiene un residuo y se espera que el promedio de los residuos sea cercano a 0.
+Se asume una relación lineal de la Y y las Xs. Para evaluar la linealidad podemos utilizar un gráfico residual que evalúa los residuos y los valores Esperados de Y. La diferencia entre el valor observado de la variable dependiente (y) y el valor predicho (ŷ) se denomina residuo (e). Cada punto de datos tiene un residuo y se espera que el promedio de los residuos sea cercano a 0.
 
 ```{r}
 plot(modelo2,1) #Se espera que la línea roja tienda a la horizontal
@@ -98,9 +133,13 @@ O también:
 mean(modelo2$residuals) # Se espera que el promedio de los residuos sea cercano a 0
 ```
 
+La falta de linearidad provocaría que el modelo no sirva para explicar las mismas variables con datos diferentes en otrs estudios.
+
+
 ### 2. Homocedasticidad
 
-Todas las distribuciones poblacionales tienen la misma varianza. Por tanto, se asume que el error del modelo de regresión no afecta la varianza o dispersión de la estimación, en la medida que también se mantiene constante. Para evaluarlo podemos utilizar un gráfico de Scale-location plot. También podemos utilizar el test de Breusch-Pagan. La homocedasticidad es lo contrario a la heterocedasticidad.
+Se asume que la varianza de los errores del modelo de regresión se mantienen constantes. 
+Para evaluarlo podemos utilizar un gráfico de Scale-location plot. También podemos utilizar el test de Breusch-Pagan. La homocedasticidad es lo contrario a la heterocedasticidad.
 
 ```{r}
 plot(modelo2,3) # Se espera que la línea roja debe tender a horizontal.
@@ -110,6 +149,9 @@ plot(modelo2,3) # Se espera que la línea roja debe tender a horizontal.
 library(lmtest)
 bptest(modelo2) #H0 = Modelo homocedástico, ojo aquí buscamos que sea mayor a 0.05 para cumplir con el requisito
 ```
+
+La presencia de heterocedasticidad afecta el cálculo de los p-valores, lo que afectará la validez de todo el modelo.
+
 
 ### 3. Normalidad de residuos
 
@@ -123,6 +165,8 @@ plot(modelo2,2) # En este caso la expectativa es que los puntos se acerquen lo m
 shapiro.test(modelo2$residuals) #H0= Hay normalidad
 ```
 
+La falta de normalidad limita la capacidad de hacer inferencias a partir de lo encontrado.
+
 ### 4. No multicolinealidad
 
 La multicolinealidad es una situación en la que se presenta una fuerte correlación entre variables explicativas del modelo. Cuando el valor de la prueba VIF es mayor a 5 significa que esa variable tiene una fuerte correlación con otras variables incluidas en el modelo. Para evaluarlo podemos utilizar el Factor de Inflación de la Varianza
@@ -131,6 +175,8 @@ La multicolinealidad es una situación en la que se presenta una fuerte correlac
 library(DescTools)
 VIF(modelo2) #>5 es problemático
 ```
+
+La presencia de la multicolinealidad no perjudica tanto el calculo de la dependiente, pero evita calcular bien el efecto de cada regresor.
 
 ### 5. Valores influyentes
 
@@ -144,4 +190,9 @@ plot(modelo2,5) #miramos valores fuera de las lineas punteadas
 checModelo2=as.data.frame(influence.measures(modelo2)$is.inf)
 checModelo2[checModelo2$cook.d & checModelo2$hat,] #visualizamos valores 
 ```
+
+
+Si alguna fila aparece en el resultado, ese caso está afectando los cálculos de la regresión (sin él habría otro resultado).
+
+
 
