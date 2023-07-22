@@ -1,0 +1,318 @@
+---
+title: "Sesion 3. Limpieza de datos (I)"
+output:
+ html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    code_download: true
+    theme: cosmo
+    highlight: textmate
+---
+
+```{r,echo=FALSE, out.width="40%",fig.align="center"}
+knitr::include_graphics("logoPUCP.png") 
+```
+
+
+```{r}
+library(rio)
+data="https://github.com/WendyAdrianzenRossi/Statistics/raw/main/midata.csv"
+urban=import(data)
+```
+
+# 1. Limpieza de datos
+
+Vemos que tenemos los datos, pero no están bien.
+
+Usualmente las bases de datos que necesitamos para nuestros análisis estadísticos los conseguimos de fuentes de información oficial, por lo que ya están listas para ser utilizadas.
+
+No obstante, con frecuencia nos toparemos con datos que necesitan ser manipulados para su correcto uso. Por ejemplo, al usar scrapping de páginas de internet, o utilizando información descargada de una API. 
+
+Además, la limpieza de datos también es útil cuando una base de datos contiene exceso de información, o información que deseas manipular para un objetivo específico: por ejemplo, fusionar una data con otra, reconfigurar una variable de cadena a numérica, entre otros.
+
+## 1.1 Primera columna
+
+Veamos los datos de la primera fila y la primera columna
+
+```{r}
+# fila 1, columna 1
+urban[1,1]
+```
+
+Vemos que hay expresiones irregulares que pueden afectar nuestro análisis.
+Vamos a utilizar el comando **trimws()**, que elimina espacios en blanco antes y despues de texto.
+
+Este comando utiliza dos argumentos:
+
++ El argumento which indica si se eliminan los espacios a la izquierda de la cadena de caracteres (left), después de (right) o para ambos lados (both). 
++ El espacio en blanco 
+
+```{r}
+urban$COUNTRY =trimws(urban$COUNTRY,which=c("right"),whitespace = "[\\h\\v]") # el espacio en blanco se determina "\\h\\v", o también "\t\r\n"
+```
+
+Veamos de nuevo la primera fila y la primera columna:
+
+```{r}
+urban[1,1]
+```
+
+## 1.2 Segunda columna
+
+
+Ahora veamos los datos de la primera fila y la segunda columna
+
+```{r}
+# fila 1, columna 2
+urban[1,2]
+```
+
+Aqui hay dos variables:
+
+1. Población urbana (urban population)
+2. Tasa de urbanización (rate of urbanization)
+
+Estos dos porcentajes deberían estar en diferentes columnas. En esta sección, veremos uno de los  caminos para separar los datos.
+
+### a. Uso de expresiones regulares
+
+Expresión regular, también conocida como regex, es una secuencia de caracteres que forma un patrón de búsqueda, principalmente utilizada para la búsqueda de patrones de cadenas de caracteres u operaciones de sustituciones.
+
+En este caso, vamos a usar el comando **str_extract_all()** (instalar librería "stringr"), el cual extrae cada patrón y lo ubica en un vector diferente por cada resultado.
+
+Este comando utiliza dos argumentos:
+
++ string = vector de caracteres que se trabajará
++ pattern = patrón a buscar: 
+
+"\\d": Recoge todos los casos por separado que R reconoce como números. No reconoce palabras ni símbolos de porcentaje. 
+
+"\\d"+: Recoge números adyacentes.
+
+\\d+\\.*\\d*: Recoge los casos con decimales
+
+\\d+\\.*\\d*\\%: Recoge decimales y también porcentajes.
+
+\\d+\\.*\\d*)(?=\\%): Recoge decimales, porcentajes pero elimina el símbolo %.
+
+Veamos algunos ejemplos
+
+Imaginemos que tenemos la siguiente información '25.3%,0% y 23.5% 13 34 hola 5 6 chau' y queremos extraer solo los números. 
+
+Para utilizar este camino, debemos instalar y utilizar la librería "string"
+
+```{r}
+library(stringr)
+# En este caso, le estamos pidiendo que nos traiga cada numero
+str_extract_all(string = '25.3%,0% y 23.5% 13 34 hola 5 6 chau 200',pattern="\\d")
+```
+
+```{r}
+# me trae números adyacentes:
+str_extract_all('25.3%,0% y 23.5% 13 34 hola 5 6 chau', pattern = "\\d+") # + es al menos 1 
+```
+
+```{r}
+# numero entero, seguido opcionalmente de punto, más número de una o más cifras.
+str_extract_all('25.3%,0% y 23.5% 13 34 hola 5 6 chau', pattern="\\d+\\.*\\d*")
+```
+
+```{r}
+# numero entero, seguido opcionalmente de punto, más número de una o más cifras, seguido de %.
+str_extract_all('25.3%,0% y 23.5% 13 34 hola 5 6 chau',pattern = "\\d+\\.*\\d*\\%")
+```
+
+```{r}
+# porcentaje sin el simbolo
+
+#  que antes de (?=\\%) haya (\\d+\\.*\\d*)
+    
+str_extract_all('25.3%,0% y 23.5% 13 34 hola 5 6 chau',pattern = "(\\d+\\.*\\d*)(?=\\%)")
+```
+
+
+```{r}
+# porcentaje sin el símbolo pero con signo negativo, si hubiese
+    
+str_extract_all('25.3%,0% y -23.5% 13 34 hola', pattern = "(\\-*\\d+\\.*\\d*)(?=\\%)")
+```
+
+Finalizando con [[1]][1]: permite visualizar un valor específico.
+
+```{r}
+# primer valor es
+str_extract_all('25%, 0% y 23.5%',
+                "(\\-*\\d+\\.*\\d*)(?=\\%)")[[1]][1]
+```
+
+```{r}
+# segundo valor es
+str_extract_all('25%, 0% y 23.5% hola',
+                "(\\-*\\d+\\.*\\d*)(?=\\%)")[[1]][2]
+```
+
+```{r}
+# tercer valor es
+str_extract_all('25%, 0% y 23.5% fwFRWFWF', 
+                "(\\-*\\d+\\.*\\d*)(?=\\%)")[[1]][3]
+```
+
+Ahora, apliquemos lo aprendido a nuestra columna de urbanización. Recordemos lo que tenemos:
+
+```{r}
+# fila 1, columna 2
+urban[1,2]
+```
+
+```{r eval=FALSE}
+str_extract_all(urban$URBANIZATION,"(\\-*\\d+\\.*\\d*)(?=\\%)")
+```
+
+La estructura obtenida no facilitaría el trabajo de producir dos columnas (porque es una lista de vectores). El usar simplify lo hace mas fácil.
+
+str_extract_all: 
+Finalizando con  simplify = T : permite visualizar cada columna de información por separado.
+
+```{r eval=FALSE}
+str_extract_all(urban$URBANIZATION,
+                "(\\-*\\d+\\.*\\d*)(?=\\%)",
+                simplify = T)
+```
+
+Esa matriz anterior me permite acceder a cada columna:
+
+```{r}
+# Creamos objetos
+PATRON="(\\-*\\d+\\.*\\d*)(?=\\%)"
+COLSUCIA=urban$URBANIZATION
+
+# UNA COLUMNA
+urban$pop_urb=str_extract_all(string = COLSUCIA,
+                              pattern= PATRON,
+                              simplify = T)[,1]
+
+# OTRA COLUMNA
+urban$rate_urb=str_extract_all(string = COLSUCIA,
+                               pattern=PATRON,
+                               simplify = T)[,2]
+```
+
+Veamos, ejecutemos en la consola: head(urban[,-2])
+
+```{r}
+head(urban[-2])
+```
+
+
+### b. Uso de particiones
+
+
+```{r}
+# Recordamos:
+urban[1,2]
+```
+
+El comando **str_split** nos permite separar un string en varias piezas.
+
+str_split(string, pattern, simplify = T/F)
+
+Aqui busco un texto que me permita dividir esa cadena de texto:
+
+```{r eval=FALSE}
+str_split(string = urban$URBANIZATION,
+          pattern = 'rate of urbanization:')
+```
+
+Como podemos ver, se utiliza el patrón como punto de división. En un lado, quedan los valores previos al patrón y, en el otro lado, los valores posteriores.
+
+A pesar de que aún esta "sucio", vamos a crear dos columnas.
+
+```{r}
+urban$pop_urb2=str_split(string = urban$URBANIZATION,
+                         pattern = 'rate of urbanization:',
+                         simplify = T)[,1]
+
+urban$rate_urb2=str_split(string = urban$URBANIZATION,
+                          pattern = 'rate of urbanization:',
+                          simplify = T)[,2]
+```
+
+Ahora limpiamos la primera columna. Para ello, vamos a repetir el proceso
+
+Si una celda luce así:
+
+```{r}
+urban$pop_urb2[1]
+```
+
+Puedo tener mejor texto si la divido y me quedo con el primer elemento:
+
+```{r}
+str_split(urban$pop_urb2, '% of total', simplify = T)
+```
+
+```{r}
+urban$pop_urb2=str_split(urban$pop_urb2,
+                         '% of total',
+                         simplify = T)[,1] 
+```
+
+Entonces, ahora tenemos:
+
+```{r}
+urban$pop_urb2[1]
+```
+
+Uso otro simbolo divisor y, en este caso,me quedo con la parte 2:
+
+```{r}
+str_split(urban$pop_urb2,':',simplify = T)
+```
+
+```{r}
+urban$pop_urb2=str_split(urban$pop_urb2,
+                         ':',
+                         simplify = T)[,2]
+```
+
+Luego tengo:
+
+```{r}
+urban$pop_urb2[1]
+```
+
+Si sigo la misma estrategia para la otra columna:
+
+```{r}
+urban$rate_urb2[1]
+```
+
+Veo que puede ser trivial:
+
+```{r}
+urban$rate_urb2=str_split(urban$rate_urb2,
+                          pattern = '%',
+                          simplify = T)[,1]
+```
+
+```{r}
+urban$rate_urb2[1]
+```
+
+Veamos. Ejecutemos en la consola: head(urban[,-2])
+
+```{r eval=FALSE, include=FALSE}
+head(urban[,-2])
+```
+
+# **EJERCICIO**.
+
+1. Abrir la base de datos de ataques terroristas para la década de 1990, la cual puedes encontrar en el siguiente enlace: https://es.wikipedia.org/wiki/Anexo:Ataques_terroristas. Luego, separa la variable "fecha" y crear una columna que contenga solo el año.
+
+2. Abre la base de datos sobre el salario mínimo en Perú, la cual puedes encontrar en el siguiente enlace https://es.wikipedia.org/wiki/Anexo:Salario_m%C3%ADnimo_en_Per%C3%BA#D%C3%A9cada_de_2020. Posteriormente, limpia las columnas "salario mensual", "promedio diario" y "variación". Debe mantenerse únicamente los valores númericos
+
+3. Abre la base de datos llamada "cia" desde el repositorio de github: https://github.com/WendyAdrianzenRossi/Statistics. Esta es una base de datos sobre los ingresos obtenidos por recursos forestales. La columna "col1" presenta la fecha de recolección de la información y el % del GDP. Intenta limpiar la base de datos, de tal manera que, tengas cada variable en una columna diferente.
+

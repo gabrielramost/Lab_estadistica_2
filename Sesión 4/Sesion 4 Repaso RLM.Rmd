@@ -1,0 +1,198 @@
+---
+title: "Sesión 4. Repaso RLM"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+## Abrir base de datos
+
+```{r echo=FALSE}
+library(rio)
+data=import("https://github.com/gabrielramost/Lab_estadistica_2/blob/main/Sesi%C3%B3n%204/trabajadores.sav?raw=true")
+```
+
+Vamos a determinar y analizar el mejor modelo para determinar los principales predictores que permitan explicar el salario actual de los trabajadores de la empresa de esta base de datos. 
+
+```{r eval=FALSE}
+names(data)
+```
+
+Las variables son
+- sexo: Describe el sexo del trabajador, siendo "0" mujer y "1" hombre.
+- fechanac: Fecha de nacimiento del trabajador
+- educ: Años de estudio o formación educativa del entrevistado.
+- catlab: Categoría laboral a la que pertenece el entrevistado siendo 1. Administrativo / 2. Seguridad / 3. Directivo.
+- salario_actual: En unidades monetarias.
+- salario_inicial: Salario con el que el entrevistado ingresó a la empresa, en unidades monetarias. 
+- antiguedad: Tiempo en meses de estancia en la empresa.
+- experiencia: Experiencia previa del trabajador en meses, antes de ingresar a la empresa.
+- minoría: Si pertenece o no a un grupo minoritario siendo "0" que no pertenece y "1" que si pertenece.
+- directivo: Si pertenece o no al grupo directivo de la empresa siendo "0" que no pertenece y "1" que si pertenece.
+
+## Configuración de variables
+
+```{r}
+data$sexo<-as.factor(data$sexo)
+levels(data$sexo)<-c("Mujer","Hombre")
+levels(data$sexo)
+
+data$catlab<-as.ordered(data$catlab)
+levels(data$catlab)<-c("Administrativo","Seguridad","Directivo")
+levels(data$catlab)
+
+data$minoría<-as.factor(data$minoría)
+levels(data$minoría)<-c("No","Si")
+levels(data$minoría)
+
+data$directivo<-as.factor(data$directivo)
+levels(data$directivo)<-c("No","Si")
+levels(data$directivo)
+
+```
+
+# A. Regresión lineal o gaussiana
+
+## Con estas variables vamos a buscar construir un modelo que nos permita explicar el salario actual de los trabajadores de esta empresa
+
+**Modelo 1**
+
+```{r}
+modelo1<-lm(salario_actual~educ+ antiguedad + experiencia, data)
+summary(modelo1)
+```
+
+**Modelo 2**
+
+```{r}
+modelo2<-lm(salario_actual~salario_inicial + educ + antiguedad + experiencia, data)
+summary(modelo2)
+```
+
+**Comparamos modelos** 
+
+```{r}
+library(stargazer)
+stargazer(modelo1,modelo2, type ="text")
+```
+
+Tambien podemos mostrar los resultados de la siguiente manera:
+
+```{r}
+library(modelsummary)
+models = list(modelo1,modelo2)
+modelsummary(models, output = "kableExtra")
+```
+
+
+¿Qué modelo es el mejor? Veamos el R2 y el aporte de las variables. También podemos utilizar anova para comparación de modelos.
+La comparación de modelos usando la tabla de análisis de varianza (anova) propone como hipótesis nula que los modelos no difieren (no se ha reducido el error al pasar de un modelo a otro).
+
+```{r}
+library(dplyr)
+library(magrittr)
+library(knitr)
+tanova=anova(modelo1,modelo2)
+tanova
+kable(tanova,
+      caption = "Tabla ANOVA para comparar modelos")%>%kableExtra::kable_styling(full_width = FALSE)
+```
+
+La comparación de modelos usando la tabla de análisis de varianza (anova) propone como hipótesis nula que los modelos no difieren (no se ha reducido el error al pasar de un modelo a otro). Como la comparación es significativa (vea el Pr(>F)), rechazamos igualdad de modelos: el modelo 2 sí reduce el error al incluir una variable más.
+
+Nos quedamos con el modelo 2
+
+Tambien podemos indagar los efectos de los regresores con coeficientes estandarizados:
+
+```{r}
+modelo2b=formula(scale(salario_actual)~scale(salario_inicial)+scale(educ)+scale(antiguedad)+scale(experiencia))
+reg2b=lm(modelo2b,data)
+model2b=list(reg2b)
+modelsummary(model2b, title = "Regresion: modelo con \ncoeficientes estandarizados",
+             stars = TRUE,
+             output = "kableExtra")
+```
+
+
+
+
+## Diagnósticos de la regresión
+
+### 1. Linealidad
+
+Se asume una relación lineal de la Y y las Xs. Para evaluar la linealidad podemos utilizar un gráfico residual que evalúa los residuos y los valores Esperados de Y. La diferencia entre el valor observado de la variable dependiente (y) y el valor predicho (ŷ) se denomina residuo (e). Cada punto de datos tiene un residuo y se espera que el promedio de los residuos sea cercano a 0.
+
+```{r}
+plot(modelo2,1) #Se espera que la línea roja tienda a la horizontal
+```
+
+O también:
+
+```{r}
+mean(modelo2$residuals) # Se espera que el promedio de los residuos sea cercano a 0
+```
+
+La falta de linearidad provocaría que el modelo no sirva para explicar las mismas variables con datos diferentes en otrs estudios.
+
+
+### 2. Homocedasticidad
+
+Se asume que la varianza de los errores del modelo de regresión se mantienen constantes. 
+Para evaluarlo podemos utilizar un gráfico de Scale-location plot. También podemos utilizar el test de Breusch-Pagan. La homocedasticidad es lo contrario a la heterocedasticidad.
+
+```{r}
+plot(modelo2,3) # Se espera que la línea roja debe tender a horizontal.
+```
+
+```{r}
+library(lmtest)
+bptest(modelo2) #H0 = Modelo homocedástico, ojo aquí buscamos que sea mayor a 0.05 para cumplir con el requisito
+```
+
+La presencia de heterocedasticidad afecta el cálculo de los p-valores, lo que afectará la validez de todo el modelo.
+
+
+### 3. Normalidad de residuos
+
+Los residuos (la distancia entre el valor esperado y el observado de la variable) deben distribuirse de manera normal. Para evaluarlo podemos utilizar un gráfico de Residuos vs distribución normal (Normal Q-Q) , o podemos aplicar el test de Shapiro Wilk.
+
+```{r}
+plot(modelo2,2) # En este caso la expectativa es que los puntos se acerquen lo más posible a la línea oblicua del gráfico que representa una distribución normal
+```
+
+```{r}
+shapiro.test(modelo2$residuals) #H0= Hay normalidad
+```
+
+La falta de normalidad limita la capacidad de hacer inferencias a partir de lo encontrado.
+
+### 4. No multicolinealidad
+
+La multicolinealidad es una situación en la que se presenta una fuerte correlación entre variables explicativas del modelo. Cuando el valor de la prueba VIF es mayor a 5 significa que esa variable tiene una fuerte correlación con otras variables incluidas en el modelo. Para evaluarlo podemos utilizar el Factor de Inflación de la Varianza
+
+```{r}
+library(DescTools)
+VIF(modelo2) #>5 es problemático
+```
+
+La presencia de la multicolinealidad no perjudica tanto el calculo de la dependiente, pero evita calcular bien el efecto de cada regresor.
+
+### 5. Valores influyentes
+
+Los valores influyentes con casos en nuestra data que no siguen el patrón general del resto de casos. No todos los valores atípicos influyen en el análisis de regresión. Aunque nuestros datos tengan valores extremos, es posible que no sean influyentes para determinar una línea de regresión. Eso significa que los resultados no serían muy diferentes si los incluyéramos o los excluyéramos del análisis.
+
+```{r}
+plot(modelo2,5) #miramos valores fuera de las lineas punteadas
+```
+
+```{r}
+checModelo2=as.data.frame(influence.measures(modelo2)$is.inf)
+checModelo2[checModelo2$cook.d & checModelo2$hat,] #visualizamos valores 
+```
+
+
+Si alguna fila aparece en el resultado, ese caso está afectando los cálculos de la regresión (sin él habría otro resultado).
+
+
+

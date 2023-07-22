@@ -1,0 +1,557 @@
+---
+title: "Sesión 4. Modelos No Lineales o GLM"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+### A. Regresión Poisson (No lineal)
+
+La regresión Poisson tiene sus supuestos:
+
++ Variable de respuesta es un conteo por unidad de tiempo o espacio, que puede ser descrita por la distribución Poisson.
+
++ Independencia: Las observaciones (filas) no deben tener relación entre sí.
+
++ Media=Varianza: Por definición, la media de una variable que se distribuye como Poisson debe ser igual a su varianza.
+
++ Linealidad: El logaritmo de la media de los datos, log(λ), debe ser una función lineal de los datos
+
+
+```{r}
+library(rio)
+data=import("https://github.com/gabrielramost/Lab_estadistica_2/blob/main/Sesi%C3%B3n%204/IOP_1119_01_02_D.sav?raw=true")
+data=subset(data, SERIE== 2019)
+```
+
+Variable dependiente:
+
+Voy a construir un indice que será mi variable dependiente, recuerde que para este tipo de regresión debe ser una variable de conteo
+
+Se pregunto si había sido víctima de los siguientes actos de acoso callejero:
+• Fue objeto de miradas persistentes e incómodas
+• Recibió silbidos
+• Le hicieron ruidos de besos
+• Le hicieron gestos vulgares
+• Recibió comentarios e insinuaciones de tipo sexual
+• Fue manoseado/a sin su consentimiento
+• Fue blanco de exhibicionismo (mostrar partes íntimas del cuerpo)
+• Fue blanco de roces incómodos y frotamientos en transporte público y/o espacios congestionados (masturbación pública)
+
+```{r}
+#Codificación
+data$P12A[data$P12A == "2"] <- 0
+data$P12B[data$P12B == "2"] <- 0
+data$P12C[data$P12C == "2"] <- 0
+data$P12D[data$P12D == "2"] <- 0
+data$P12E[data$P12E == "2"] <- 0
+data$P12F[data$P12F == "2"] <- 0
+data$P12G[data$P12G == "2"] <- 0
+data$P12H[data$P12H == "2"] <- 0
+data$P12A[data$P12A == "98"] <- NA
+data$P12B[data$P12B == "98"] <- NA
+data$P12C[data$P12C == "98"] <- NA
+data$P12D[data$P12D == "98"] <- NA
+data$P12E[data$P12E == "98"] <- NA
+data$P12G[data$P12G == "98"] <- NA
+data$P12H[data$P12H == "98"] <- NA
+# Creación del indice
+data$indiceAC=data$P12A+data$P12B+data$P12C+data$P12D+data$P12E+data$P12F+data$P12G+data$P12H
+```
+
+Visualizo:
+
+```{r}
+table(data$indiceAC)
+hist(data$indiceAC)
+```
+
+Variables independientes
+
+```{r}
+data$SEXO=as.factor(data$SEXO)
+data$SEXO=factor(data$SEXO,levels=levels(data$SEXO) ,labels=c("Hombre","Mujer"))
+
+data$NIVEDU=as.factor(data$NIVEDU)
+data$NIVEDU=factor(data$NIVEDU,levels=levels(data$NIVEDU) ,labels=c("Ninguna","Inicial","Primaria"
+,"SecundariaIncompleta","SecundariaCompleta",
+"SuperiorTecnicaincompleta",
+"Superiortecnica completa","Superior universitaria incompleta"
+,"Superior universitaria completa","Postgrado"))
+
+data$NSEGRUP=as.factor(data$NSEGRUP)
+data$NSEGRUP=factor(data$NSEGRUP,levels=levels(data$NSEGRUP) ,labels=c("AB","C","DE"))
+
+data$EDAD = as.numeric(data$EDAD)
+```
+
+### Cálculo de modelos
+
+**Modelo 1**
+
+```{r}
+library(stargazer)
+modelo1<-glm(indiceAC~EDAD,
+             family=poisson (link = "log"),
+             data=data)
+
+stargazer(modelo1,type = "text",intercept.bottom = FALSE,style="all2")
+```
+
+El impacto de la variable EDAD es negativo y estadísticamente significativo sobre la probabilidad de ser víctima de acoso callejero. Pero el coeficiente no puede interpretarse de forma directa. Calculamos exponencial:
+
+```{r}
+library(modelsummary)
+modelsummary(modelo1,
+             exponentiate = T, 
+             statistic = 'conf.int',
+             title = "EXP() de la Regresión Poisson para Interpretación",
+             stars = TRUE,
+             output = "kableExtra")
+```
+
+
+Nota que mientras en la regresión lineal no deseábamos que nuestro coeficiente esté cerca al cero, es decir, que su intervalo de confianza no incluya al cero, aquí no deseamos que el intervalo de confianza incluya al uno. Una vez exponenciado, podemos interpretar los coeficientes de manera más sencilla. 
+Nótese que esta regresión propone un efecto multiplicativo sobre el valor medio de la respuesta (la regresión OLS o Gaussiana propone un efecto aditivo).
+
+Interpretación: para el modelo se ve que por cada unidad que aumente la edad el la probabilidad de ser victima de acoso callejero se multiplica por 0.968. En otras palabras, disminuiría en 3.2 % 
+
+
+Nótese que esta regresión propone un efecto multiplicativo sobre el valor medio de la respuesta (la regresión Gaussiana propone un efecto aditivo). 
+
+**Modelo 2**
+
+```{r}
+modelo2<-glm(indiceAC~SEXO,
+             family=poisson (link = "log"),
+             data=data)
+
+stargazer(modelo2,type = "text",intercept.bottom = FALSE,style="all2") #categoria de referencia Hombre
+```
+
+Calculamos exponencial
+
+```{r}
+modelsummary(modelo2,
+             exponentiate = T, 
+             statistic = 'conf.int',
+             title = "EXP() de la Regresión Poisson para Interpretación",
+             stars = TRUE,
+             output = "kableExtra")
+```
+
+Interpretación: 
+
+Si una persona es mujer, el número de eventos de acoso callejero va a aumentar en 3.7 veces. Cuando una persona es mujer, la probabilidad de sufrir acoso callejero va a aumentar en 376%.
+
+
+**Comparación de modelos**
+
+```{r}
+stargazer(modelo1,modelo2, type ="text")
+```
+
++ Se puede comparar el LOG lIKELIHOOD, el mayor será el mejor, o el modelo que tenga menor akaike.
+
++ Tambien podemos comparar en función de las residual deviances, haciendo un anova. Nos quedamos con el segundo.
+
+```{r}
+anova(modelo1,modelo2, test = "Chisq")
+```
+
+```{r}
+library(ggplot2)
+dotwhisker::dwplot(list(Poisson1=modelo1,Poisson2=modelo2),exp=T)  +
+  scale_color_discrete(name="Modelos para: Acoso callejero") +
+  geom_vline(xintercept = 1,
+           colour = "grey60",
+           linetype = 2)
+```
+
+### Equidispersión 
+
+Uno de los supuestos era que la media y la varianza sean iguales. Si la varianza es mayor que la media, hablamos de sobredispersión (subdispersion si es menor que la media). 
+Para comprobar hacemos el test de equidispersión
+
+```{r}
+overdispersion=AER::dispersiontest(modelo1,alternative='greater')$ p.value<0.05
+underdispersion=AER::dispersiontest(modelo1,alternative='less')$ p.value<0.05
+
+# tabla
+testResult=as.data.frame(rbind(overdispersion,underdispersion))
+names(testResult)='Es probable?'
+testResult
+```
+
+La Tabla muestra que es altamente improbable que la varianza sea igual a la media, por lo que se opta por aceptar que lo más probable es que tengamos sobredispersión.
+
+
+```{r}
+VarY=data$indiceAC #Variable dependiente
+list(media=mean(VarY,na.rm=T),varianza=var(VarY,na.rm=T),razon=var(VarY,na.rm=T)/mean(VarY,na.rm=T))
+```
+
+Veamos de solucionarlo:
+
+**Quasipoisson**
+
+```{r}
+reg1quasi = glm(indiceAC~EDAD, family = quasipoisson(link = "log"), data = data)
+stargazer(modelo1,reg1quasi,type = "text",intercept.bottom = FALSE,style="all2")
+```
+
+Vemos que los coeficientes no han cambiado, pero observemos los residuos:
+
+```{r}
+library(arm)
+cbind(sePoi=se.coef(modelo1),seQuasiPoi=se.coef(reg1quasi))
+```
+
+Nota además ambos modelos tienen diferente parámetro de dispersion:
+
+```{r}
+summary(modelo1)$dispersion; summary(reg1quasi)$dispersion
+```
+
+
+```{r}
+dotwhisker::dwplot(list(Poisson1=modelo1,QuasiPoisson=reg1quasi),exp=T)  +
+  scale_color_discrete(name="Modelos para: Acoso callejero") +
+  geom_vline(xintercept = 1,
+           colour = "grey60",
+           linetype = 2)
+```
+
+La regresión quasipoisson lidia mejor con la sobredispersión, cuyo efecto concreto fue sobre los errores típicos, lo que afectaría la significancia de los predictores.
+
+
+**Binomial negativa**
+
+Otra alternativa ante la sobredispersión es usar la regresión binomial negativa. 
+
+
+```{r}
+library(MASS)
+nb <- glm.nb(indiceAC~EDAD, data = data)
+stargazer(modelo1,reg1quasi,nb, type = "text",intercept.bottom = FALSE,style="all2")
+```
+
+Vemos que la binomial negativa responde mejor y corrige los errores:
+
+```{r}
+library(dplyr)
+library(knitr)
+anova(modelo1,reg1quasi,nb, test = "Chisq") %>%
+kable(caption = "Tabla ANOVA para comparar modelos")%>%kableExtra::kable_styling(full_width = FALSE)
+```
+
+La caída del Deviance es tanta para el último caso que la mejor opción es la binomial negativa. Por lo general, la binomial negativa es más utilizada que la quasipoisson, pero la binomial negativa no es apropiada para la subdispersión, mientras que la quasipoisson sí se usa para ese caso.
+
+```{r}
+library(ggplot2)
+dotwhisker::dwplot(list(Poisson1=modelo1,QuasiPoisson=reg1quasi,NegativeBinomial=nb),exp=T)  +
+  scale_color_discrete(name="Modelos para: Acoso callejero") +
+  geom_vline(xintercept = 1,
+           colour = "grey60",
+           linetype = 2)
+```
+
+
+### B. Regresión Logística
+
+**Ideas clave**
+
++ La probabilidad: Es una medida que señala que tan posible es que ocurra un fenómeno o evento. Oscila entre 0 y 1. Cuanto más cerca de 0 menos probabilidad, y cuanto más cerca del 1 indica más probabilidad. Ejemplo: la probabilidad de ganar en un partido de futbol.
+
++ Odds: Es la probabilidad de que suceda un evento dividido por la probabilidad de que no suceda. Oscilan entre 0 e infinito y se pueden calcular para la ocurrencia del evento como para la no ocurrencia del evento. Ejemplo: la probabilidad de ganar una apuesta en un partido de futbol es 1.5 veces más probable que perder
+
++ ODDs Ratio: Es la razón entre dos odds. Permite comparar los odds de un evento en dos grupos  Va de 0 a infinito. Los modelos de regresión logística están basados en probabilidades entre dos variables. Por esta razón, es útil conocer los ODDs ratio. Ejemplo: Ganar en una apuesta de un partido de futbol es 5 veces más probable que el ganar en una apuesta de voley
+
++ La regresión logística modela el comportamiento de la probabilidad del evento de interés. Es un tipo de análisis de regresión utilizado para predecir el resultado de una variable categórica ( dependiente) en función de las variables predictoras (independientes). Es útil para modelar la probabilidad de que ocurra un evento en función del efecto de un conjunto de variables.
+
++ La idea es que la regresión logística aproxime la probabilidad de obtener "0" (no ocurre cierto suceso) o "1" (ocurre el suceso) con el valor de la variable explicativa x.
+ 
+
+```{r}
+iop=import("https://github.com/gabrielramost/Lab_estadistica_2/blob/main/Sesi%C3%B3n%204/IOP_0717_01_D.sav?raw=true")
+data = subset(iop, select = c(NRO, P17, P3B, P8, P14, P30, P19, P92, EDAD, SEXO))
+```
+
+
+**Configuración de las variables:**
+
+**Dependiente: ¿La democracia puede funcionar sin el Congreso?**
+
+```{r}
+library(car)
+data$no_cong = recode(data$P17, "2 = 1 ; 1 = 0 ; 8:9 = NA")
+data$no_cong = as.factor(data$no_cong)
+plot(data$no_cong)
+```
+
+**Variables independientes**
+
+Confianza en el congreso:
+
+```{r}
+data$conf_con = factor(ifelse(data$P3B == 1,1,
+                              ifelse(data$P3B == 2,1,
+                                     ifelse(data$P3B == 3,2,
+                                            ifelse(data$P3B == 4,2,0)))))
+data$conf_con[data$conf_con == 0] <- NA 
+data$conf_con = factor(data$conf_con, levels = c(1:2), labels = c("Trust","NoTrust"))
+```
+
+Situación económica
+
+```{r}
+data$sit_eco = ifelse(data$P8 == 1,1,
+                      ifelse(data$P8 == 2,1,
+                             ifelse(data$P8 == 3,2,
+                                    ifelse(data$P8 == 4,2,
+                                           ifelse(data$P8 == 5,2,0)))))
+data$sit_eco[data$sit_eco == 0] <- NA 
+data$sit_eco = factor(data$sit_eco, levels = c(1:2), labels = c("Better","Worst"))
+```
+
+Autoidentificación ideológica
+
+```{r}
+data$ideologia = recode(data$P14, "88:99 = NA")
+```
+
+Satisfacción con la democracia
+
+```{r}
+data$demo = ifelse(data$P19 == 1,1,
+                   ifelse(data$P19 == 2,1,
+                          ifelse(data$P19 == 3,2,
+                                 ifelse(data$P19 == 4,2,0))))
+data$demo[data$demo == 0] <- NA 
+data$demo = factor(data$demo, levels = c(1:2), labels = c("Yes","No"))
+```
+
+Edad
+
+```{r}
+data$EDAD=as.numeric(data$EDAD)
+```
+
+Sexo
+
+```{r}
+data$sexo = as.factor(data$SEXO)
+levels(data$sexo) = c("Hombre", "Mujer")
+```
+
+
+Realizamos el modelo de regresión logística ¿Qué factores determinan la creencia de que la democracia puede funcionar sin el Congreso de la República? Vamos a modelar esa probabilidad
+
+Ya estamos listos para realizar nuestros modelos
+
+```{r}
+data = na.omit(data)
+```
+
+
+**Calculo mi modelo:**
+
+Modelando la probabilidad de considerar que la democracia puede funcionar sin congreso:
+
+```{r}
+set.seed(2019)
+modelo = glm(no_cong ~ EDAD, family = binomial, data = data)
+modelor = glm(no_cong ~ EDAD + conf_con, family = binomial, data = data)
+modelog = glm(no_cong ~ EDAD + conf_con + demo, family = binomial, data = data)
+modelo1 = glm(no_cong ~ EDAD + conf_con + demo + sit_eco, family = binomial, data = data)
+stargazer(modelo, modelor,modelog,modelo1, type = "text")
+```
+
+Cuando queremos comparar modelos vemos el Akaike (AIC), se considera que un modelo es mejor si tiene un AIC menor a los demás.
+
+Los coeficientes, están modelando al logaritmo del odds de ser voluntario.
+
+¿Cuál es el efecto de las X sobre el Odds de la dependiente?
+
+```{r}
+modelsummary(modelog,
+             exponentiate = T, 
+             statistic = 'conf.int',
+             title = "Regresión Logísticas (Coeficientes Exponenciados)",
+             stars = TRUE,
+             output = "kableExtra")
+```
+
+
+Interpretación:
++ El odds de creer que la democracia puede funcionar sin el Congreso de la República, disminuye en 0.8% cada vez que la edad aumenta en uno (No significativa)
++ El odds de creer que la democracia puede funcionar sin el Congreso de la República, aumenta en 47.9% cuando no se tiene confianza en el congreso
++ El odds de creer que la democracia puede funcionar sin el Congreso de la República, aumenta en 56.8% cuando no se está satisfecho con la democracia
+
+
+Calculamos efectos marginales (lenguaje probabilístico)
+
+```{r}
+library(margins)
+model = margins(modelog) #visualicemos esto en la consola
+margins=summary(model)#Otra forma, aqui vemos los AME. visualicemos esto en la consola
+margins$ef = margins$AME*100
+margins
+```
+
+Para no hablar en términos de odds sino en lenguaje probabilístico, calculamos los efectos marginales, que se interpretan de la siguiente manera:
+
++ En promedio, no confiar en el congreso, aumenta en 0.0920 la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República.
++ En promedio, no estar satisfecho con la democracia, aumenta en 0.10 la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República.
++ En promedio, el incremento de un punto de le edad, disminuye en 0.0020 la probabilidad de creer que la democracia puede funcionar sin el Congreso de la República. (No significativa)
+
+
+### Graficamos
+
+```{r}
+margins$low_f = 100*margins$lower
+margins$upp_f = 100*margins$upper
+```
+
+```{r}
+library(ggplot2)
+base= ggplot(margins,aes(x=factor, y=ef)) + geom_point() +  geom_errorbar(aes(ymin=low_f, ymax=upp_f)) +
+        geom_point(shape=21, size=3, fill="white") +
+          ylim(-10,20)
+base
+```
+
+Valores concretos:
+
+La probabilidad de creer que la democracia puede funcionar sin Congreso, teniendo 18 años, desconfiando del Congreso, y estando insatisfecho con la democracia: 51%
+
+```{r}
+ToInput1 <- data.frame(conf_con=c("NoTrust"),demo=c("No"), EDAD=18)
+predict(object = modelog, newdata = ToInput1, type = "response")
+```
+
+Para la misma edad, pero con confianza en el congreso y satisfecho con la democracia:31%
+
+```{r}
+ToInput1 <- data.frame(conf_con=c("Trust"),demo=c("Yes"), 
+                      EDAD=18)
+predict(object = modelog, newdata = ToInput1, type = "response")
+```
+
+
+### c. Regresión Cox
+
+El objetivo de la regresión Cox es evaluar los impactos de diferentes variables sobre la "sobrevivencia". Es decir, nos ayuda a saber si ciertos factores influecian la tasa de ocurrencia de un evento en específico en un lapso de tiempo.
+
+```{r}
+library(survival)
+library(survminer)
+```
+
+Vamos a trabajar con una base de datos de personas con cancer al pulmón:
+
+```{r}
+head(lung)
+```
+
+Estas son las variables:
+
+inst: Institution code
+time: Survival time in days
+status: censoring status 1=censored, 2=dead
+age: Age in years
+sex: Male=1 Female=2
+ph.ecog: ECOG performance score (0=good 5=dead)
+ph.karno: Karnofsky performance score (bad=0-good=100) rated by physician
+pat.karno: Karnofsky performance score as rated by patient
+meal.cal: Calories consumed at meals
+wt.loss: Weight loss in last six months
+
+Vamos a ver algunos descriptivos del tiempo de sobrevivencia:
+
+```{r}
+summary(lung$time)
+```
+
+Ahora de la ocurrencia del evento:
+
+```{r}
+#Recodificamos para que 0 sea la ocurrencia:
+lung$status1 = ifelse(lung$status == 2,1,0)
+table(lung$status1)
+```
+
+
+Empezamos con el análisis:
+
+```{r}
+lung$survival=with(lung,Surv(time = time,
+                             event =  status1))
+```
+
+```{r}
+library(ggplot2)
+library(ggfortify)
+
+KM.generico = survfit(survival ~ 1, data = lung)
+
+ejeX='DAYS\n Curva cae cuando ocurre un fallecimiento'
+ejeY='Probabilidad \n(Sobrevivir)'
+titulo="Curva de Sobrevivencia"
+autoplot(KM.generico,xlab=ejeX,ylab=ejeY, main = titulo,conf.int = F)
+```
+
+Lo que indica el gráfico es que la probabilidad de sobrevivir al cancer en el día 0 es del 100% (todas las personas del estudio están vivas). Esta diminuye conforme avanzan los días. Pasado el día número 500, la probabilidad de sobrevivir es menor al 25%.
+
+Ahora probemos una hipótesis: los hombres tienen una menor probabilidad de sobrevivir.
+
+```{r}
+KM_H1=formula(survival ~ sex)
+
+KM.sex = survfit(KM_H1, data = lung)
+
+###
+ejeX='DAYS\n Curva cae cuando ocurre un fallecimiento'
+ejeY='Probabilidad \n(Sobrevivir)'
+titulo="Curva de Sobrevivencia"
+
+autoplot(KM.sex,xlab=ejeX,ylab=ejeY, 
+         main = titulo,conf.int = F)  + 
+        labs(colour = "Impacto del género") + 
+         scale_color_discrete(labels = c("Hombre", "Mujer"))
+```
+
+
+Efectivamente, parece que la mejor no pinta tan bien para los hombres. Veamos los intervalos de confianza:
+
+
+```{r}
+LogRank=survdiff(KM_H1, data = lung)
+LogRank$pvalue
+```
+
+```{r}
+autoplot(KM.sex,xlab=ejeX,ylab=ejeY, 
+         main = titulo,conf.int = T)+ 
+        labs(colour = "Impacto del género") + 
+         scale_color_discrete(labels = c("Hombre", "Mujer"))
+```
+
+Probemos ahora otra hipótesis: más joven es la persona, sus probabilidad de sobrevivir serán mayores. Para ver cómo juegan ambas variables a la vez, hay que evaluarlo con una regresión:
+
+```{r}
+COX_H1= formula(survival~factor(sex)+age)
+rcox1 <- coxph(COX_H1,data=lung)
+summary(rcox1)
+```
+
+Vemos que el género tiene un impacto negativo sobre la probabilidad de fallecimiento. Es decir, el ser mujer (2) disminuye la probabilidad de ocurrencia del evento. Esto es estadísticamente significativo, mientras que la edad no muestra impactos. Pero, en tanto esta es una combinación lineal, no se pueden interpretar directamente:
+
+```{r}
+(sex=abs(1-exp(coef(rcox1)[1])))
+```
+
+Esto ya se puede interpretar: ser mujer está asociado con un mejor pronóstico, reduciendo las probabilidades de ocurrencia del evento en 40%.
+
+

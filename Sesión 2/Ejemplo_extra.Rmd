@@ -1,0 +1,29 @@
+---
+title: "Ejemplo adicional"
+output: html_document
+date: "2023-04-23"
+---
+
+# Tabla de posiciones de Conmebol Libertadores
+
+```{r}
+# cargar la biblioteca
+library(rvest)
+
+# URL del sitio web
+url <- "https://www.espn.com.ar/futbol/posiciones/_/liga/conmebol.libertadores"
+xpath1 = "/html/body/div[1]/div/div/div/main/div[3]/div/div/section/div/section/section/div[1]/div/div[2]/table/tbody"
+xpath2 = "/html/body/div[1]/div/div/div/main/div[3]/div/div/section/div/section/section/div[1]/div/div[2]/div/div[2]/table"
+
+# leer el HTML de la página web
+webpage <- read_html(url)
+
+# extraer la tabla de posiciones
+tabla_posiciones_1 <- html_nodes(webpage, xpath = xpath1) %>% html_table()
+tabla_posiciones_2 <- html_nodes(webpage, xpath = xpath2) %>% html_table()
+
+tabla = list(tabla_posiciones_1,tabla_posiciones_2)
+
+tabla = bind_cols(tabla)
+```
+
